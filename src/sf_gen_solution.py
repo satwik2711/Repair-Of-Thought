@@ -1,20 +1,23 @@
 import time
 import re
-import os
-import time
 import json
-import openai 
+import openai
 import argparse
 from tqdm import tqdm
 from gen_solution_prompt import sf_construct_prompt
+import os
 
 
+# Function to query the OpenAI model
 def query_model(prompt, sample_size):
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OpenAI API Key not set. Please set the 'OPENAI_API_KEY' environment variable.")
     
     delay = 10
     while(True):
         try:
-            response = api_gpt3_5_response(prompt, sample_size)
+            response = api_gpt_response(prompt, sample_size)
             break
         except openai.APIError as e:
             if "Please reduce " in str(e):
@@ -34,61 +37,54 @@ def query_model(prompt, sample_size):
     return response_list
 
 
-def api_gpt3_5_response(prompt, n):
-    response = openai.chat.completions.create(    
+
+
+from openai import OpenAI
+# Function to interact with OpenAI's chat completion API (latest version)
+def api_gpt_response(prompt, n):
+    # openai.api_key = api_key
+    client = OpenAI()
+    return client.chat.completions.create(
+        model="gpt-4o",  # You can switch to "gpt-3.5-turbo" if needed
         messages=[{"role": "user", "content": prompt}],
-        model="gpt-3.5-turbo",
         n=n,
-        temperature=0.8)
-    return response
+        temperature=0.8
+    )
 
 
-class SolInfo():
-    def __init__(self, dataset_path, solution_path, extracted_solution_path, sample_size, target_bug):
+# Solution Information class to handle the dataset, paths, and extraction
+class SolInfo:
+    def __init__(self, dataset_path, solution_path, extracted_solution_path=None, sample_size=1, target_bug=None):
         with open(dataset_path, 'r') as f:
             self.dataset = json.load(f)
-        if target_bug is not None:
+
+        if target_bug:
             self.dataset = {target_bug: self.dataset[target_bug]}
+
         self.solution_path = solution_path
-        if extracted_solution_path is None:
-            exp_name_idx = len(solution_path) - 1
-            while exp_name_idx >= 0 and solution_path[exp_name_idx] != '.':
-                exp_name_idx -= 1
-            if exp_name_idx >= 0:
-                self.extracted_solution_path = solution_path[: exp_name_idx] + '_extracted' + solution_path[exp_name_idx:]
-            else:
-                self.extracted_solution_path = solution_path + '_extracted.json'
-        else:
-            self.extracted_solution_path = extracted_solution_path
+        self.extracted_solution_path = extracted_solution_path or self._get_extracted_solution_path(solution_path)
         self.sample_size = sample_size
         self.target_bug = target_bug
-        return
+
+    def _get_extracted_solution_path(self, solution_path):
+        base, ext = solution_path.rsplit('.', 1)
+        return f"{base}_extracted.{ext}"
 
 
+# Function to split solutions based on patterns
 def split_solutions(text):
     pattern = r'Suggestion \d+:.*?(?=Suggestion \d+:|$)'
     solutions = re.findall(pattern, text, re.DOTALL)
-    
-    cleaned_solutions = []
-    for solution in solutions:
-        parts = solution.split(':', 1)
-        cleaned_solution = parts[1].strip() if len(parts) > 1 else solution.strip()
-        cleaned_solutions.append(cleaned_solution)
-
-    return cleaned_solutions
+    return [solution.split(':', 1)[1].strip() if ':' in solution else solution.strip() for solution in solutions]
 
 
+# Function to extract the root cause from the solution text
 def extract_root_cause(text):
-    pattern = r'Root Cause:.*?(?=Suggestion \d+:|$)'
-    match = re.search(pattern, text, re.DOTALL)
-    
-    if match:
-        root_cause = match.group().split(':', 1)[1].strip()
-        return root_cause
-    else:
-        return None
+    match = re.search(r'Root Cause:.*?(?=Suggestion \d+:|$)', text, re.DOTALL)
+    return match.group().split(':', 1)[1].strip() if match else None
 
 
+# Function to get solutions by querying the model
 def get_solutions(sol_info):
     solutions = {}
     for bug_name in tqdm(sol_info.dataset.keys()):
@@ -99,49 +95,56 @@ def get_solutions(sol_info):
     return solutions
 
 
+# Function to extract solutions from the raw output
 def extract_solutions(raw_solution):
     extracted_solutions = {}
-    for bug_name in raw_solution:
+    for bug_name, solution_data in raw_solution.items():
         extracted_solutions[bug_name] = {}
-        solutions = raw_solution[bug_name]['solutions']
+        solutions = solution_data['solutions']
 
         for solution in solutions:
-            split_solution_lst = split_solutions(solution)
-            curr_root_cause = extract_root_cause(solution)
-            if curr_root_cause not in extracted_solutions[bug_name]:
-                extracted_solutions[bug_name][curr_root_cause] = split_solution_lst
-            extracted_solutions[bug_name][curr_root_cause].extend(split_solution_lst)
+            split_solution_list = split_solutions(solution)
+            root_cause = extract_root_cause(solution)
+
+            if root_cause not in extracted_solutions[bug_name]:
+                extracted_solutions[bug_name][root_cause] = split_solution_list
+            else:
+                extracted_solutions[bug_name][root_cause].extend(split_solution_list)
 
     return extracted_solutions
 
 
+# Main execution flow
 def main():
+    args = parse_arguments()
+
     sol_info = SolInfo(
-        args.d,
-        args.o,
-        args.eo,
-        args.s,
-        args.bug
+        dataset_path=args.d,
+        solution_path=args.o,
+        extracted_solution_path=args.eo,
+        sample_size=args.s,
+        target_bug=args.bug
     )
+
     solutions = get_solutions(sol_info)
     with open(sol_info.solution_path, 'w') as f:
         json.dump(solutions, f, indent=2)
+
     extracted_solutions = extract_solutions(solutions)
     with open(sol_info.extracted_solution_path, 'w') as f:
         json.dump(extracted_solutions, f, indent=2)
-    return 
 
 
+# Argument parser for command-line usage
 def parse_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-d', type=str, required=True, help='dataset path')
-    parser.add_argument('-o', type=str, required=True, help='raw_solution path')
-    parser.add_argument('-eo', type=str, required=False, help='extracted_solution path')
-    parser.add_argument('-s', type=int, required=False, help='sample_size', default=1)
-    parser.add_argument('-bug', type=str, required=False, help='bug')
+    parser = argparse.ArgumentParser(description="Generate and extract solutions for single-function bugs.")
+    parser.add_argument('-d', type=str, required=True, help='Path to the dataset file.')
+    parser.add_argument('-o', type=str, required=True, help='Path to save the raw solution output.')
+    parser.add_argument('-eo', type=str, required=False, help='Path to save the extracted solutions output.')
+    parser.add_argument('-s', type=int, required=False, default=1, help='Number of solution samples to generate.')
+    parser.add_argument('-bug', type=str, required=False, help='Specific bug to generate a solution for.')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
-    args = parse_arguments()
     main()
