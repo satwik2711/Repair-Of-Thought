@@ -3,3 +3,4 @@ tqdm
 tiktoken
 openai
 transformers @ git+https://github.com/huggingface/transformers.git@main
+together
