@@ -28,23 +28,24 @@ def extract_test_method(testcase_lst):
 
 
 # Function to extract all patch codes
+# Function to extract all patch codes
 def extract_all_patch_codes(orig_patch, dataset, bug_name):
     patch_code_lst = []
-    code_patch_pattern = r'```(?:java\n)?(.*?)\n```'
+    # Updated the regex to extract Java code between ```java ... ```
+    code_patch_pattern = r'```java\n(.*?)\n```'
     extracted_lst = re.findall(code_patch_pattern, orig_patch, re.DOTALL)
 
+    # If we can extract code patches from the response
+    if extracted_lst:
+        patch_code_lst.extend(extracted_lst)
+        return patch_code_lst
+    
+    # Fallback extraction logic (in case the main pattern doesn't match)
+    orig_patch_lines = orig_patch.split('\n')
+    len_orig_patch_lines = len(orig_patch_lines)
     function_name = ' ' + dataset[bug_name]['method_signature']['method_name'] + '('
     function_return_type = dataset[bug_name]['method_signature']['return_type']
 
-    if extracted_lst:
-        for patch_code in extracted_lst:
-            if function_name in patch_code and function_return_type in patch_code:
-                patch_code_lst.append(patch_code)
-        if len(patch_code_lst) > 0:
-            return patch_code_lst
-
-    orig_patch_lines = orig_patch.split('\n')
-    len_orig_patch_lines = len(orig_patch_lines)
     for idx in range(len_orig_patch_lines - 1, -1, -1):
         curr_rline = orig_patch_lines[idx]
         if function_name not in curr_rline or function_return_type not in curr_rline:
@@ -92,7 +93,8 @@ def togetherai_model_apr(apr_info):
     suggestions = apr_info.suggestions
 
     # Initialize TogetherAI client
-    client = Together(api_key=os.getenv('TOGETHER_API_KEY'))
+    # client = Together(api_key=os.getenv('TOGETHER_API_KEY'))
+    client = Together(api_key='-')
     
     patches = {}
     for bug_name in dataset:
@@ -122,12 +124,14 @@ def togetherai_model_apr(apr_info):
                         stop=["<|eot_id|>", "<|eom_id|>"],
                     )
 
-                    for choice in response['choices']:
-                        generated_text = choice['message']['content']
-                        prompt_end_idx = generated_text.find(apr_prompt.strip()) + len(apr_prompt.strip())
-                        fixed_result = generated_text[prompt_end_idx:].strip() if prompt_end_idx != -1 else generated_text
-                        fixed_result = fixed_result.replace('[/INST]  ', '')
-                        suggest_patch.append(fixed_result)
+                    # Accessing the response correctly
+                    if response.choices:
+                        for choice in response.choices:
+                            generated_text = choice.message.content
+                            prompt_end_idx = generated_text.find(apr_prompt.strip()) + len(apr_prompt.strip())
+                            fixed_result = generated_text[prompt_end_idx:].strip() if prompt_end_idx != -1 else generated_text
+                            fixed_result = fixed_result.replace('[/INST]  ', '')
+                            suggest_patch.append(fixed_result)
 
                     curr_patch_cnt = len(curr_patch['patches']) + len(suggest_patch)
                     print(f'### [APR]: bug_name: {bug_name:25}  |  curr_patch_cnt: {curr_patch_cnt:>3}  |  patches_cnt: {len(patches):3} ###')
