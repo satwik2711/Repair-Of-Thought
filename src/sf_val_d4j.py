@@ -41,17 +41,6 @@ def encoding_check(encoding_check_file_path):
         return None
     return encoding_mode, file_content
 
-
-def checkout_defects4j_project(current_bug, project_dir):
-    project, bug_id = current_bug.split('-')
-    FNULL = open(os.devnull, 'w')
-    command = "defects4j checkout " + " -p " + project + " -v " + bug_id + 'b'  + " -w " + project_dir
-    print('[CHECKOUT]', command)
-    p = subprocess.Popen([command], shell=True, stdout=FNULL, stderr=FNULL)
-    p.wait()
-    return
-
-
 def monitor_memory(pid, interval, stop_event, max_memory_event):
     max_memory = 0
     try:
@@ -65,6 +54,19 @@ def monitor_memory(pid, interval, stop_event, max_memory_event):
         pass
     max_memory_event[0] = max_memory / (1024 ** 3)
 
+
+import os
+import subprocess
+import threading
+import time
+import shutil
+import json
+import psutil
+import concurrent.futures as cf
+from pathlib import Path
+
+# Specify the absolute path to defects4j executable
+DEFECTS4J_PATH = "/Users/satwikpandey/Dev/ROT/defects4j/framework/bin/defects4j"  # Update this with the actual absolute path
 
 def command_with_timeout(cmd, timeout=90):
     max_memory_event = [None]
@@ -88,31 +90,48 @@ def command_with_timeout(cmd, timeout=90):
             print(f'[WARNING] MEMORY OCCUPIED {max_memory_usage:.2f} GB -- {cmd}')
     return stdout, stderr
 
-
 def defects4j_test_suite(project_dir, timeout=1000):
     os.chdir(project_dir)
-    out, err = command_with_timeout(["defects4j", "test", "-r"], timeout)
+    out, err = command_with_timeout([DEFECTS4J_PATH, "test", "-r"], timeout)
     if "Compilation failed" in str(out):
         print("[FAIL] Compile tests for ", project_dir)
     return out, err
 
-
 def defects4j_export_trigger(project_dir, timeout=90):
     os.chdir(project_dir)
-    out, err = command_with_timeout(["defects4j", "export", "-p", "tests.trigger"], timeout)
+    out, err = command_with_timeout([DEFECTS4J_PATH, "export", "-p", "tests.trigger"], timeout)
     return out, err
-
 
 def defects4j_export_relevant(project_dir, timeout=90):
     os.chdir(project_dir)
-    out, err = command_with_timeout(["defects4j", "export", "-p", "tests.relevant"], timeout)
+    out, err = command_with_timeout([DEFECTS4J_PATH, "export", "-p", "tests.relevant"], timeout)
     return out, err
-
 
 def defects4j_test_one(project_dir, test_case, timeout=100):
     os.chdir(project_dir)
-    out, err = command_with_timeout(["defects4j", "test", "-t", test_case], timeout)
+    out, err = command_with_timeout([DEFECTS4J_PATH, "test", "-t", test_case], timeout)
     return out, err
+
+def checkout_defects4j_project(current_bug, project_dir):
+    project, bug_id = current_bug.split('-')
+    command = [DEFECTS4J_PATH, "checkout", "-p", project, "-v", f"{bug_id}b", "-w", project_dir]
+    print('[CHECKOUT]', " ".join(command))
+    
+    result = subprocess.run(command, capture_output=True, text=True)
+    
+    if result.returncode != 0:
+        print(f"[ERROR] Checkout failed for {current_bug}. Return code: {result.returncode}")
+        print("STDOUT:", result.stdout)
+        print("STDERR:", result.stderr)
+        return False
+    
+    expected_file = os.path.join(project_dir, 'src/main/java/org/apache/commons/math3/distribution/HypergeometricDistribution.java')
+    if not os.path.exists(expected_file):
+        print(f"[ERROR] Expected file not found after checkout: {expected_file}")
+        return False
+    
+    return True
+
 
 
 def extract_d4j_result(err, out, val_stage):
@@ -214,8 +233,12 @@ class ValInfo():
         dataset_path = config_info['dataset_path']
         with open(dataset_path, "r") as f:
             self.dataset = json.load(f)
-        checkout_defects4j_project(self.curr_bug, self.proj_dir)
-
+        
+        if not checkout_defects4j_project(self.curr_bug, self.proj_dir):
+            print(f"[ERROR] Failed to checkout project for {self.curr_bug}")
+            self.checkout_success = False
+        else:
+            self.checkout_success = True
 
     def init_bug_status_info(self):
         time_out = 2000
@@ -237,8 +260,14 @@ class ValInfo():
 
     
     def check_init_success(self):
+        if not self.checkout_success:
+            return False
+        if self.encoding_mode is None or self.original_buggy_file_content is None:
+            return False
+        if self.backup_buggy_file_path is None:
+            return False
         return len(self.failed_test_cases) > 0
-    
+        
     
     def patch_id_counter(self):
         self.patch_id += 1
