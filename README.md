@@ -1,4 +1,4 @@
-# ROT: Automated Program Repair Framework
+# REPAIR-OF-THOUGHT: Automated Program Repair Framework
 
 **ROT** is a sophisticated, UI-based Automated Program Repair (APR) tool that leverages the power of Large Language Models (LLMs) to generate repair suggestions and patches for bugs in software projects. Inspired by cutting-edge research, ROT is designed to address function-level bug repair, offering a streamlined approach that reduces the need for costly, statement-level fault localization.
 
