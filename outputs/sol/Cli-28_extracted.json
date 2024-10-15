@@ -1,0 +1,8 @@
+{
+  "Cli-28": {
+    "null": [
+      "Refactor Boolean Check Logic**\n```\nChange the logic to correctly differentiate between options that accept arguments and those that are treated as boolean flags.\n\nModify this portion of the code:\n\n```\nelse if (!(\"yes\".equalsIgnoreCase(value)\n        || \"true\".equalsIgnoreCase(value)\n        || \"1\".equalsIgnoreCase(value)))\n{\n    break;\n}\n```\n\nTo:\n\n```\nelse if (!opt.hasArg() && !(\"yes\".equalsIgnoreCase(value)\n        || \"true\".equalsIgnoreCase(value)\n        || \"1\".equalsIgnoreCase(value)))\n{\n    // if the option does not accept an argument and the value is not yes, true, or 1\n    // then don't add the option to the CommandLine\n    continue;\n}\n```\n\nThis ensures that non-argument options are treated as boolean flags, while those that accept arguments are handled correctly.\n\n**",
+      "Correct the Flow Control with Continue Statement**\n```\nReplace `break` with `continue` in the critical path.\nThis ensures that each option is considered individually rather than prematurely exiting the loop.\n\nChange:\n\n```\nelse if (!(\"yes\".equalsIgnoreCase(value)\n        || \"true\".equalsIgnoreCase(value)\n        || \"1\".equalsIgnoreCase(value)))\n{\n    break;\n}\n```\n\nTo:\n\n```\nelse if (!(\"yes\".equalsIgnoreCase(value)\n        || \"true\".equalsIgnoreCase(value)\n        || \"1\".equalsIgnoreCase(value)))\n{\n    continue;\n}\n```\n\nThis modification ensures that the loop continues to process other options even if the current option does not meet the boolean flag criteria."
+    ]
+  }
+}
