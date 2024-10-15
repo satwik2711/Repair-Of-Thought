@@ -42,11 +42,11 @@ def main():
     # Step 2: Extract Solutions
     if st.button("Extract Solutions"):
         try:
-            with open("output.json", "r") as f:
+            with open("output2.json", "r") as f:
                 raw_solutions = json.load(f)
             
             extracted_solutions = extract_solutions(raw_solutions)
-            with open("output_extracted.json", "w") as f:
+            with open("output2_extracted.json", "w") as f:
                 json.dump(extracted_solutions, f, indent=2)
 
             st.success("Solutions extracted successfully. Extracted solutions saved in output_extracted.json.")
@@ -72,7 +72,7 @@ def main():
     if os.path.exists("patch_result.json"):
         st.write("### Generated Patches Review")
 
-        with open("patch_result.json", "r") as f:
+        with open("timepatch2.json", "r") as f:
             patch_result = json.load(f)
 
         bug_names = list(patch_result.keys())

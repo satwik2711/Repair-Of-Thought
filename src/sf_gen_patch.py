@@ -37,7 +37,7 @@ def togetherai_model_apr(apr_info):
     dataset = apr_info.dataset
     suggestions = apr_info.suggestions
 
-    client = Together(api_key="")
+    client = Together(api_key=os.getenv('TOGETHER_API_KEY'))
 
     patches = {}
     for bug_name in dataset:
