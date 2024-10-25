@@ -72,19 +72,6 @@ The ROT evaluation reveals significant outperformance over traditional methods, 
    streamlit run app.py
    ```
 
-### Optional: Docker Setup
-
-For users wishing to containerize the environment, a Dockerfile is included:
-
-```bash
-docker build ./ --tag rot-apr
-```
-
-To run the container:
-
-```bash
-docker run -it --name rot-apr-container rot-apr
-```
 
 ## 🚀 Quick Start
 

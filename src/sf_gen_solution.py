@@ -7,9 +7,8 @@ from tqdm import tqdm
 from gen_solution_prompt import sf_construct_prompt
 import os
 
-
-# Function to query the OpenAI model
-def query_model(prompt, sample_size):
+# Function to query the OpenAI model with reasoning steps
+def query_model_with_reasoning(prompt, sample_size):
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise ValueError("OpenAI API Key not set. Please set the 'OPENAI_API_KEY' environment variable.")
@@ -36,13 +35,9 @@ def query_model(prompt, sample_size):
             response_list.append(choice.message.content)
     return response_list
 
-
-
-
 from openai import OpenAI
 # Function to interact with OpenAI's chat completion API (latest version)
 def api_gpt_response(prompt, n):
-    # openai.api_key = api_key
     client = OpenAI()
     return client.chat.completions.create(
         model="gpt-4o",  # You can switch to "gpt-3.5-turbo" if needed
@@ -50,7 +45,6 @@ def api_gpt_response(prompt, n):
         n=n,
         temperature=0.8
     )
-
 
 # Solution Information class to handle the dataset, paths, and extraction
 class SolInfo:
@@ -70,30 +64,37 @@ class SolInfo:
         base, ext = solution_path.rsplit('.', 1)
         return f"{base}_extracted.{ext}"
 
-
 # Function to split solutions based on patterns
 def split_solutions(text):
     pattern = r'Suggestion \d+:.*?(?=Suggestion \d+:|$)'
     solutions = re.findall(pattern, text, re.DOTALL)
     return [solution.split(':', 1)[1].strip() if ':' in solution else solution.strip() for solution in solutions]
 
-
 # Function to extract the root cause from the solution text
 def extract_root_cause(text):
     match = re.search(r'Root Cause:.*?(?=Suggestion \d+:|$)', text, re.DOTALL)
     return match.group().split(':', 1)[1].strip() if match else None
 
-
-# Function to get solutions by querying the model
-def get_solutions(sol_info):
+# Function to get solutions with reasoning steps by querying the model
+def get_solutions_with_reasoning(sol_info):
     solutions = {}
     for bug_name in tqdm(sol_info.dataset.keys()):
         solutions[bug_name] = {}
         prompt = sf_construct_prompt(sol_info.dataset, bug_name)
         solutions[bug_name]['prompt'] = prompt
-        solutions[bug_name]['solutions'] = query_model(prompt, sol_info.sample_size)
+        raw_responses = query_model_with_reasoning(prompt, sol_info.sample_size)
+        solutions[bug_name]['solutions'] = []
+        for response in raw_responses:
+            reasoning_steps = extract_reasoning_steps(response)
+            final_solution_with_reasoning = f"Reasoning Steps:\n" + "\n".join(reasoning_steps) + "\n\nFinal Solution:\n" + response
+            solutions[bug_name]['solutions'].append(final_solution_with_reasoning)
     return solutions
 
+# Function to extract reasoning steps from the solution text
+def extract_reasoning_steps(text):
+    pattern = r'Reasoning Step \d+:.*?(?=Reasoning Step \d+:|Final Answer|$)'
+    reasoning_steps = re.findall(pattern, text, re.DOTALL)
+    return [step.strip() for step in reasoning_steps]
 
 # Function to extract solutions from the raw output
 def extract_solutions(raw_solution):
@@ -113,7 +114,6 @@ def extract_solutions(raw_solution):
 
     return extracted_solutions
 
-
 # Main execution flow
 def main():
     args = parse_arguments()
@@ -126,14 +126,13 @@ def main():
         target_bug=args.bug
     )
 
-    solutions = get_solutions(sol_info)
+    solutions = get_solutions_with_reasoning(sol_info)
     with open(sol_info.solution_path, 'w') as f:
         json.dump(solutions, f, indent=2)
 
     extracted_solutions = extract_solutions(solutions)
     with open(sol_info.extracted_solution_path, 'w') as f:
         json.dump(extracted_solutions, f, indent=2)
-
 
 # Argument parser for command-line usage
 def parse_arguments():
@@ -144,7 +143,6 @@ def parse_arguments():
     parser.add_argument('-s', type=int, required=False, default=1, help='Number of solution samples to generate.')
     parser.add_argument('-bug', type=str, required=False, help='Specific bug to generate a solution for.')
     return parser.parse_args()
-
 
 if __name__ == '__main__':
     main()
