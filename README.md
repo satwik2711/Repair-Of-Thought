@@ -56,8 +56,8 @@ The ROT evaluation reveals significant outperformance over traditional methods, 
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/yourusername/ROT.git
-   cd ROT
+   git clone https://github.com/satwik2711/Repair-Of-Thought.git
+   cd Repair-Of-Thought
    ```
 
 2. **Install required dependencies**:
