@@ -1,9 +1,0 @@
-{
-  "Math-2": {
-    "null": [
-      "Correct Order of Type Casting**\n   - Before performing the multiplication, cast the integers to `double` to prevent overflow, ensuring that arithmetic is done in the floating-point domain:\n   ```java\n   public double getNumericalMean() {\n       return ((double) getSampleSize() * (double) getNumberOfSuccesses()) / (double) getPopulationSize();\n   }\n   ```\n\n**",
-      "Use Long for Intermediate Calculation**\n   - Use `long` for intermediate calculations to handle larger numbers without overflow, followed by casting to `double` for the final division:\n   ```java\n   public double getNumericalMean() {\n       return ((double) ((long) getSampleSize() * (long) getNumberOfSuccesses())) / (double) getPopulationSize();\n   }\n   ```\n\n**",
-      "Intermediate Variable with Casting**\n   - Introduce an intermediate variable with `double` casting prior to multiplication to ensure no overflow occurs:\n   ```java\n   public double getNumericalMean() {\n       double sampleSize = (double) getSampleSize();\n       double numberOfSuccesses = (double) getNumberOfSuccesses();\n       return (sampleSize * numberOfSuccesses) / (double) getPopulationSize();\n   }\n   ```\n\nAny of these suggestions would resolve the overflow issue, leading to a correct calculation of the mean and preventing negative samples from being generated in the distribution."
-    ]
-  }
-}
