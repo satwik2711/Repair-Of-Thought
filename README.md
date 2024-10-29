@@ -68,7 +68,14 @@ The ROT evaluation reveals significant outperformance over traditional methods, 
    pip install -r requirements.txt
    ```
 
-3. **Run the application**:
+3. **Export your API keys**
+   ```bash
+   export TOGETHER_API_KEY=your_api_key
+   export GROQ_API_KEY=your_api_key
+   export OPENAI_API_KEY=your_api_key #only if using gpt4o reasoning
+   ```
+
+4. **Run the application**:
 
    ```bash
    streamlit run app-4o1.py  # For GPT-4o reasoning
