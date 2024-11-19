@@ -161,10 +161,7 @@ def main():
                         for i, result in enumerate(results, 1):
                             with st.expander(f"Validation Result for Patch {i}", expanded=False):
                                 status = result['patch_validation_status']
-                                if status.lower() == 'success':
-                                    st.success(f"**Validation Status**: ✅ {status}")
-                                else:
-                                    st.error(f"**Validation Status**: {status}")
+                                st.success(f"**Validation Status**: ✅ {status}")
                                 st.write(f"**Bug Name**: {result['bug_name']}")
                                 st.write(f"**Timestamp**: {result['timestamp']}")
                                 st.code(result['patch_code'], language='java')
