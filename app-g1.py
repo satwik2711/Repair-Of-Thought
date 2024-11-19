@@ -5,7 +5,7 @@ import subprocess
 from datetime import datetime
 
 def main():
-    st.set_page_config(layout="wide")
+    # st.set_page_config(layout="wide")
     st.title("Repair of Thought")
     st.write(
         """
@@ -14,7 +14,7 @@ def main():
         Input a bug name and sample size to generate solutions and patches, or view existing results.
         """
     )
-    st.write("[![Star](<https://img.shields.io/github/stars/satwik2711/Repair-Of-Thought.svg?logo=github&style=social)](<https://gitHub.com/satwik2711/Repair-Of-Thought)")
+    
 
     # User inputs
     sample_size = st.number_input("Number of solution samples to generate", min_value=1, max_value=5, value=1)
