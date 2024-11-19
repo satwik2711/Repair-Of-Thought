@@ -22,7 +22,7 @@ def main():
         sample_size = st.number_input("Number of solution samples to generate", min_value=1, max_value=5, value=1)
         bug_name = st.text_input("Specify the bug ID to generate a solution for (e.g., Math-2)")
         st.markdown("---")
-        st.write("© 2023 Repair of Thought")
+        st.write("© 2024 Repair of Thought")
 
     # Define output directories
     sol_dir = "outputs-g1/sol"
