@@ -41,7 +41,7 @@ def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=Non
                     return {"title": "Error", "content": f"Failed to generate step after 3 attempts. Error: {str(e)}", "next_action": "final_answer"}
             time.sleep(1)
 
-def generate_reasoned_solution(prompt, custom_client=None):
+def generate_reasoned_solution(prompt, custom_client=None, num_patches=3):
     messages = [
         {"role": "system", "content": """You are an expert software developer and debugger that explains your reasoning step by step. For each step, provide a title that describes what you're doing in that step, along with the content. Decide if you need another step or if you're ready to give the final solution. Respond in JSON format with 'title', 'content', and 'next_action' (either 'continue' or 'final_answer') keys. 
 
@@ -92,7 +92,7 @@ Example response format:
 
     messages.append({
         "role": "user", 
-        "content": "Based on your reasoning above, provide a final detailed solution with:\n1. Root Cause Analysis\n2. Multiple distinct repair suggestions\nFormat as 'Root Cause: {description}' followed by 'Suggestion 1: {title}\n{details}' etc."
+        "content": f"Based on your reasoning above, provide a final detailed solution with:\n1. Root Cause Analysis\n2. {num_patches} distinct repair suggestions\nFormat as 'Root Cause: {{description}}' followed by 'Suggestion 1: {{title}}\n{{details}}' etc."
     })
     
     start_time = time.time()
@@ -105,7 +105,7 @@ Example response format:
     yield steps, total_thinking_time
 
 class SolInfo:
-    def __init__(self, dataset_path, solution_path, extracted_solution_path=None, sample_size=1, target_bug=None):
+    def __init__(self, dataset_path, solution_path, extracted_solution_path=None, sample_size=1, target_bug=None, patch_num=3):
         with open(dataset_path, 'r') as f:
             self.dataset = json.load(f)
         
@@ -116,6 +116,7 @@ class SolInfo:
         self.extracted_solution_path = extracted_solution_path or self._get_extracted_solution_path(solution_path)
         self.sample_size = sample_size
         self.target_bug = target_bug
+        self.patch_num = patch_num
 
     def _get_extracted_solution_path(self, solution_path):
         base, ext = solution_path.rsplit('.', 1)
@@ -132,7 +133,7 @@ def get_solutions_with_reasoning(sol_info):
         for _ in range(sol_info.sample_size):
             steps = []
             final_time = None
-            for step_result, total_time in generate_reasoned_solution(prompt):
+            for step_result, total_time in generate_reasoned_solution(prompt,num_patches=sol_info.patch_num):
                 steps = step_result
                 final_time = total_time
             
@@ -182,6 +183,7 @@ def main():
     parser.add_argument('-eo', type=str, required=False, help='Path to save the extracted solutions output.')
     parser.add_argument('-s', type=int, required=False, default=1, help='Number of solution samples to generate.')
     parser.add_argument('-bug', type=str, required=False, help='Specific bug to generate a solution for.')
+    parser.add_argument('-patch_num', type=int, required=False, default=3, help="Number of patches to generate.")
     
     args = parser.parse_args()
     
@@ -190,7 +192,8 @@ def main():
         solution_path=args.o,
         extracted_solution_path=args.eo,
         sample_size=args.s,
-        target_bug=args.bug
+        target_bug=args.bug,
+        patch_num=args.patch_num
     )
     
     solutions = get_solutions_with_reasoning(sol_info)

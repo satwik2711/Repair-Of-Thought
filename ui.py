@@ -16,6 +16,7 @@ def main():
     
     # User inputs
     sample_size = st.number_input("Number of solution samples to generate", min_value=1, max_value=5, value=1)
+    num_patches = st.number_input("Number of patches to generate", min_value=1, max_value=10, value=1)
     bug_name = st.text_input("Specify the bug ID to generate a solution for (e.g., Math-2)")
 
     # Define output directories
@@ -38,7 +39,7 @@ def main():
             if not os.path.exists(solution_file) or not os.path.exists(extracted_solution_file):
                 st.write(f"Generating solutions for bug: {bug_name}...")
                 try:
-                    command = f"python src/sf_gen_solution_reasoned.py -d datasets/defects4j-sf.json -o {solution_file} -s {sample_size} -bug {bug_name}"
+                    command = f"python src/sf_gen_solution_reasoned.py -d datasets/defects4j-sf.json -o {solution_file} -s {sample_size} -bug {bug_name} -patch_num {num_patches}"
                     subprocess.run(command, shell=True, check=True)
                     st.success("Solutions generated with reasoning steps")
                 except subprocess.CalledProcessError as e:
