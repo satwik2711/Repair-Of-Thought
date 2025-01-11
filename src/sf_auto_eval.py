@@ -1,5 +1,5 @@
 import json
-
+import asyncio
 import os
 from google import genai
 from google.genai import types
@@ -14,21 +14,22 @@ class PatchInfo(BaseModel):
 api_key = os.getenv('GEMINI_API_KEY')
 client = genai.Client(api_key=api_key)
 
-def evaluate_patch(bug_name: str, generated_patch: str) -> dict:
+async def evaluate_single_patch(bug_name: str, generated_patch: str) -> dict:
     """
-    Evaluate a generated patch against a bug's ground truth
+    Evaluate a single generated patch against a bug's ground truth asynchronously.
     
     Args:
         bug_name: Name of the bug (e.g. "Math-2")
         generated_patch: The patch code to evaluate
-        
+
     Returns:
-        dict: Contains response text and classification JSON
+        dict: Contains prompt, analysis, and classification
     """
     file_path = r"D:\Repair-Of-Thought\datasets\defects4j-sf.json"
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
 
+    # Build out the test sections from the JSON
     test_sections = []
     for test_key in data[bug_name]['trigger_test']:
         test_case = data[bug_name]['trigger_test'][test_key]
@@ -40,6 +41,7 @@ Error Message: {test_case['clean_error_msg']}
 """
         test_sections.append(test_section)
 
+    # Create the evaluation prompt
     prompt = f"""You are an expert at evaluating program patches for correctness.
 
 You will be given:
@@ -89,7 +91,7 @@ Explain your reasoning step by step, then conclude with your classification.
 [Issue Title]: {data[bug_name]['issue_title']}
 [Issue Description]: {data[bug_name]['issue_description']}
 {''.join(test_sections)}
-[Ground Truth Patch]: {data[bug_name]['fix']} 
+[Ground Truth Patch]: {data[bug_name]['fix']}
 [Generated Patch]: {generated_patch}
 """
 
@@ -101,19 +103,22 @@ Explain your reasoning step by step, then conclude with your classification.
         stop_sequences=["STOP!"]
     )
 
-    response = client.models.generate_content(
+    # First LLM call to get reasoning/analysis
+    response = await client.aio.models.generate_content(
         model='gemini-2.0-flash-thinking-exp-1219',
-        #model='gemini-2.0-flash-exp',
         contents=types.Part.from_text(prompt),
         config=generation_config
     )
 
-    output_prompt = f"""This is a big reasoning response from gemini-2.0-flash-thinking, output the classification type in JSON.- CORRECT: Semantically equivalent to ground truth
+    # Second call for classification in JSON
+    output_prompt = f"""This is a big reasoning response from gemini-2.0-flash-thinking, output the classification type in JSON.
+- CORRECT: Semantically equivalent to ground truth
 - PLAUSIBLE: Fixes core issue but has behavioral differences
 - INCORRECT: Wrong behavior or fails tests
+
 Output: {response.text}"""
 
-    response2 = client.models.generate_content(
+    response2 = await client.aio.models.generate_content(
         model='gemini-2.0-flash-exp',
         contents=types.Part.from_text(output_prompt),
         config=types.GenerateContentConfig(
@@ -127,3 +132,27 @@ Output: {response.text}"""
         "analysis": response.text,
         "classification": response2.text
     }
+
+async def evaluate_patches(bug_name: str, generated_patches: list[str]) -> list[dict]:
+    """
+    Evaluate multiple generated patches for a given bug_name asynchronously.
+    
+    Args:
+        bug_name: Name of the bug
+        generated_patches: List of patch codes to evaluate
+
+    Returns:
+        A list of dictionaries, each containing:
+        - "prompt": The final prompt used
+        - "analysis": The large language model's analysis
+        - "classification": The classification type in JSON
+    
+    Usage:
+        all_results = asyncio.run(evaluate_patches(bug_name, candidate_patches))
+    """
+    tasks = [
+        evaluate_single_patch(bug_name, patch)
+        for patch in generated_patches
+    ]
+    results = await asyncio.gather(*tasks)
+    return results
