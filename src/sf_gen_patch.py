@@ -6,7 +6,7 @@ from together import Together
 from gen_patch_prompt import sf_build_apr_prompt_auto
 
 # Use a model suitable for code generation
-model_name = "codellama/CodeLlama-34b-Instruct-hf"
+model_name = "Qwen/Qwen2.5-Coder-32B-Instruct"
 model_format_prompt = '''Return your fixed function surrounded with ```java\n```.\n@@ Instruction\n{apr_prompt}\n@@ Response'''
 
 def extract_all_patch_codes(orig_patch, dataset, bug_name):

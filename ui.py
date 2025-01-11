@@ -19,9 +19,9 @@ def main():
     bug_name = st.text_input("Specify the bug ID to generate a solution for (e.g., Math-2)")
 
     # Define output directories
-    sol_dir = "outputs-g1/sol"
-    patches_dir = "outputs-g1/patches"
-    val_dir = "outputs-g1/val"
+    sol_dir = "outputs/sol"
+    patches_dir = "outputs/patches"
+    val_dir = "outputs/val"
     os.makedirs(sol_dir, exist_ok=True)
     os.makedirs(patches_dir, exist_ok=True)
     os.makedirs(val_dir, exist_ok=True)
