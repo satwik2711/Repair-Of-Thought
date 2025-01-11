@@ -5,6 +5,7 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 from pydantic import BaseModel
+import datetime
 
 load_dotenv()
 
@@ -127,32 +128,42 @@ Output: {response.text}"""
         )
     )
 
-    return {
+    return  {
         "prompt": prompt,
         "analysis": response.text,
-        "classification": response2.text
+        "patch_validation_status": json.loads(response2.text)["patch_type"],
+        "bug_name": bug_name,
+        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "generated_patch": generated_patch
     }
 
-async def evaluate_patches(bug_name: str, generated_patches: list[str]) -> list[dict]:
+async def evaluate_patches(bug_name: str, generated_patch_file: str) -> list[dict]:
     """
     Evaluate multiple generated patches for a given bug_name asynchronously.
     
     Args:
         bug_name: Name of the bug
-        generated_patches: List of patch codes to evaluate
+        generated_patch_file: Path to the JSON file containing patches
 
     Returns:
-        A list of dictionaries, each containing:
-        - "prompt": The final prompt used
-        - "analysis": The large language model's analysis
-        - "classification": The classification type in JSON
-    
-    Usage:
-        all_results = asyncio.run(evaluate_patches(bug_name, candidate_patches))
+        A list of dictionaries containing evaluation results
     """
+    with open(generated_patch_file, 'r', encoding='utf-8') as file:
+        patch_data = json.load(file)
+        
+    # Access patches through the bug_name key first
+    generated_patches = patch_data.get(bug_name, {}).get('patches', [])
+    
     tasks = [
         evaluate_single_patch(bug_name, patch)
         for patch in generated_patches
     ]
     results = await asyncio.gather(*tasks)
-    return results
+    
+    os.makedirs('outputs/val', exist_ok=True)
+    
+    output_path = f'outputs/val/{bug_name}_patch_val.json'
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump({bug_name: results}, f, indent=2)
+    
+    return {bug_name: results}

@@ -66,11 +66,17 @@ def main():
             if not os.path.exists(validation_file):
                 st.write(f"Validating patches for bug: {bug_name}...")
                 try:
-                    command = f"python3 src/sf_val2.py -i {patch_file} -o {validation_file} -d datasets/defects4j-sf.json -p correct_patch/defects4j-sf"
-                    subprocess.run(command, shell=True, check=True)
+                    from src.sf_auto_eval import evaluate_patches
+                    import asyncio
+                    
+                    with open(patch_file, 'r') as f:
+                        patch_data = json.load(f)
+                    
+                    results = asyncio.run(evaluate_patches(bug_name, patch_file))
                     st.success("Patches validated successfully")
-                except subprocess.CalledProcessError as e:
+                except Exception as e:
                     st.error(f"Error during patch validation: {e}")
+                    st.exception(e)  # This will print the full traceback
                     return
             else:
                 st.write(f"Validation file for bug '{bug_name}' already exists. Using existing file.")
@@ -109,19 +115,6 @@ def main():
                     st.info(f"Total thinking time: {solution.get('total_time', 0):.2f} seconds")
                     st.divider()
 
-        if os.path.exists(patch_file):
-            st.write("### Generated Patches")
-            with open(patch_file, "r") as f:
-                patch_result = json.load(f)
-                
-                patches = patch_result.get(bug_name, {}).get("patches", [])
-                if patches:
-                    for i, patch in enumerate(patches, 1):
-                        with st.expander(f"Patch {i}", expanded=False):
-                            st.code(patch, language='java')
-                else:
-                    st.write("No patches generated.")
-
         if os.path.exists(validation_file):
             st.write("### Patch Validation Results")
             with open(validation_file, "r") as f:
@@ -133,10 +126,16 @@ def main():
                             st.write(f"**Validation Status**: {result['patch_validation_status']}")
                             st.write(f"**Bug Name**: {result['bug_name']}")
                             st.write(f"**Timestamp**: {result['timestamp']}")
-                            st.code(result['patch_code'], language='java')
+                            st.code(result['generated_patch'], language='java')
                             
-                else:
-                    st.write("No validation results available.")
+                            # Instead of nested expander, use columns and a toggle
+                            st.write("---")  # Add a separator
+                            show_details = st.toggle('Show Prompt and Analysis', key=f"toggle_{i}")
+                            if show_details:
+                                st.write("#### Prompt")
+                                st.code(result['prompt'], language='text')
+                                st.write("#### Analysis")
+                                st.markdown(result['analysis'])
 
 if __name__ == "__main__":
     main()
