@@ -13,4 +13,3 @@ def sf_build_apr_prompt_auto(buggy_function, root_cause, suggestion):
     parts.append(buggy_function)
     parts.append(fixed_label)
     return '\n'.join(parts)
-

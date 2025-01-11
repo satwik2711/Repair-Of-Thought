@@ -7,7 +7,34 @@ from gen_patch_prompt import sf_build_apr_prompt_auto
 
 # Use a model suitable for code generation
 model_name = "Qwen/Qwen2.5-Coder-32B-Instruct"
-model_format_prompt = '''Return your fixed function surrounded with ```java\n```.\n@@ Instruction\n{apr_prompt}\n@@ Response'''
+model_format_prompt = '''You are a Senior Level Programmer who is an expert in fixing bugs. Review the following function and provide a corrected implementation.
+
+@@ Context
+{apr_prompt}
+
+@@ Instructions
+1. Analyze the provided root cause and suggestion carefully
+2. Ensure your fix addresses the identified issue
+3. Maintain the original method signature
+4. Make MINIMAL changes to fix the identified issue
+5. Preserve the original code structure and style
+6. Only modify the specific lines needed to address the root cause
+7. Keep all working parts of the original implementation
+8. Follow the provided fix suggestion without over-engineering
+
+@@ Response Format
+Return ONLY the complete fixed function wrapped in ```java
+<your implementation>
+``` tags.
+
+@@ Important Notes
+- DO NOT rewrite or restructure the entire function
+- DO NOT add unnecessary optimizations
+- DO NOT change working code that isn't related to the bug
+- DO NOT modify the method signature
+- DO maintain the original variable names and coding style
+
+Your response:'''
 
 def extract_all_patch_codes(orig_patch, dataset, bug_name):
     patch_code_lst = []
@@ -49,7 +76,6 @@ def togetherai_model_apr(apr_info):
                     dataset[bug_name]['buggy'], root_cause, suggestion)
                 prompt = model_format_prompt.format(
                     apr_prompt=apr_prompt.strip())
-
                 curr_patch['prompt'].append(apr_prompt)
                 suggest_patch = []
 
@@ -67,6 +93,7 @@ def togetherai_model_apr(apr_info):
                         for choice in response.choices:
                             generated_text = choice.message.content
                             if generated_text:
+                                print(f"\n {generated_text} \n")
                                 suggest_patch.append(generated_text)
                     else:
                         print("Unexpected response format:", response)
