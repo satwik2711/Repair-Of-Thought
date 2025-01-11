@@ -173,7 +173,7 @@ class AutoPatchGenerator:
                 self.dataset[bug_name]['buggy'],
                 FIXED_LABEL
             ])
-            
+            print(prompt)
             try:
                 response = self.together_client.chat.completions.create(
                     model="Qwen/Qwen2.5-Coder-32B-Instruct",
