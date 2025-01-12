@@ -1,0 +1,9 @@
+{
+  "Closure-118": {
+    "The root cause of the issue is likely due to the renaming of properties in the handleObjectLit function. The function schedules the renaming of properties using the scheduleRenaming method, which may be causing the property names to be mangled. This is because the function does not account for properties defined on the prototype, leading to the mangled names.": [
+      "Preserve Original Property Names\nTo fix this issue, the handleObjectLit function can be modified to preserve the original property names by skipping the renaming process when the property is already defined in the scope. This can be achieved by adding a check to see if the property is already defined before scheduling the renaming. The modified code would need to verify if the property name already exists in the current scope, and if so, it should not be renamed.",
+      "Modify the scheduleRenaming Method\nAnother approach is to modify the scheduleRenaming method to preserve the original property names. This can be done by passing the original property name as an argument to the scheduleRenaming method and using it to generate the new name. The scheduleRenaming method would need to be updated to handle the case where the property is defined on the prototype and should not be renamed.",
+      "Disable Property Renaming for Prototype Properties\nA third approach is to disable property renaming for properties defined on the prototype. This can be achieved by adding a check to see if the property is defined on the prototype before scheduling the renaming, and skipping the renaming process if it is. The handleObjectLit function would need to check the parent node of the current property to determine if it is a prototype property, and if so, it should not be renamed."
+    ]
+  }
+}

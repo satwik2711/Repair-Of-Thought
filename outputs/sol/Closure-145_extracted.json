@@ -1,0 +1,9 @@
+{
+  "Closure-145": {
+    "The root cause of this issue lies in the implementation of the isOneExactlyFunctionOrDo function, which fails to consider the context in which FUNCTION or DO tokens appear, particularly within IF statements and following labels or other statements. This oversight leads to incorrect parsing or printing of such constructs.": [
+      "Enhance Context Awareness\nThe isOneExactlyFunctionOrDo function needs to be modified to consider the context in which a node is used. This involves checking the parent node to determine if the current node is part of an IF statement and if it follows a label or another statement. By enhancing context awareness, the function can accurately identify and handle FUNCTION or DO tokens in various scenarios, ensuring correct parsing and printing.",
+      "Implement Special Case Handling for Labels\nA specific logic should be introduced to handle cases where a FUNCTION or DO token follows a label within an IF block. This logic should treat such instances as special cases that require additional handling, potentially including the addition of curly brackets to ensure correct parsing and printing. By implementing this special case handling, the function can correctly manage complex constructs involving labels and FUNCTION or DO tokens.",
+      "Adjust Parsing Logic Based on Node Position\nThe parsing logic within the isOneExactlyFunctionOrDo function should be adjusted to consider the position of the node within its parent. If a FUNCTION or DO token is found within an IF statement and follows another statement or label, the parsing logic should account for this position to ensure accurate handling. This adjustment in parsing logic will enable the function to correctly parse and print FUNCTION or DO tokens in various positions within IF statements."
+    ]
+  }
+}

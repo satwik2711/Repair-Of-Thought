@@ -105,7 +105,7 @@ def process_bug(bug_name, patch_num, client_index, sample_size=1):
             auto_eval_dict = asyncio.run(evaluate_patches(bug_name, patch_file))
             bug_result["auto_eval_results"] = auto_eval_dict.get(bug_name, [])
             
-            validation_statuses = [result.get("patch_validation_status") for result in bug_result["auto_eval_results"]]
+            validation_statuses = [result.get("patch_validation_status","").upper() for result in bug_result["auto_eval_results"]]
             
             if "CORRECT" in validation_statuses:
                 bug_result["final_result"] = "CORRECT"
@@ -220,8 +220,7 @@ if __name__ == '__main__':
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
     
-    #subset_data=list(data.keys())[:50]
-    subset_data=["Cli-14","Cli-15","Cli-17"]
+    subset_data=list(data.keys())[100:150]
     final_path = generate_dataset_results(
         patch_num=3,
         bug_names=subset_data

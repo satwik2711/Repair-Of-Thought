@@ -1,0 +1,9 @@
+{
+  "Closure-122": {
+    "The bug is caused by the fact that the `handleBlockComment` function is not correctly checking for the presence of `@` on a new line in the block comment. The current implementation checks for `/* @` or `\\n * @`, but it does not account for cases where there are multiple newline characters or whitespace before the `@` symbol.": [
+      "Check for '@' on a new line with optional whitespace\nThe function can be modified to check for the presence of '@' on a new line, allowing for optional whitespace characters before the '@' symbol. This can be achieved by using a regular expression to match the pattern. For example, the condition can be changed to `comment.getValue().indexOf(\\\"/*\\\") != -1 && comment.getValue().indexOf(\\\"@\\\") != -1 && comment.getValue().indexOf(\\\"@\\\") > comment.getValue().indexOf(\\\"/*\\\")`.",
+      "Use a more comprehensive regular expression\nAnother approach is to use a more comprehensive regular expression that matches the JSDoc comment pattern. This can include checking for the presence of '@' followed by a word character (e.g., '@type', '@param', etc.). For example, the condition can be changed to `comment.getValue().matches(\\\"/\\\\*.*?@\\\\w+.*?\\\")`.",
+      "Split the comment into lines and check each line individually\nThe function can split the comment into individual lines and check each line for the presence of '@'. This approach can help to handle cases where there are multiple newline characters or whitespace before the '@' symbol. For example, the function can be modified to split the comment into lines using `comment.getValue().split(\\\"\\\\n\\\")` and then check each line for the presence of '@'.\", \"next_action\": \"final_answer\"}"
+    ]
+  }
+}
