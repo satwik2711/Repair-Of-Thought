@@ -6,8 +6,19 @@ import argparse
 from tqdm import tqdm
 import os
 from gen_solution_prompt import sf_construct_prompt
+from dotenv import load_dotenv
 
-client = groq.Groq()
+load_dotenv()
+
+def get_client():
+    """Get Groq client based on environment variable"""
+    client_index = os.getenv('GROQ_CLIENT_INDEX', '1')
+    api_key = os.getenv(f'GROQ_API_KEY_{client_index}')
+    if not api_key:
+        raise ValueError(f"GROQ_API_KEY_{client_index} not found in environment variables")
+    return groq.Groq(api_key=api_key)
+
+client = get_client()
 
 def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=None):
     global client
@@ -41,7 +52,9 @@ def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=Non
                     return {"title": "Error", "content": f"Failed to generate step after 3 attempts. Error: {str(e)}", "next_action": "final_answer"}
             time.sleep(1)
 
-def generate_reasoned_solution(prompt, custom_client=None, num_patches=3):
+def generate_reasoned_solution(prompt, client=None, num_patches=3):
+    if client is None:
+        client = get_client()
     messages = [
         {"role": "system", "content": """You are an expert software developer and debugger that explains your reasoning step by step. For each step, provide a title that describes what you're doing in that step, along with the content. Decide if you need another step or if you're ready to give the final solution. Respond in JSON format with 'title', 'content', and 'next_action' (either 'continue' or 'final_answer') keys. 
 
@@ -75,7 +88,7 @@ Example response format:
     
     while True:
         start_time = time.time()
-        step_data = make_api_call(messages, 500, custom_client=custom_client)
+        step_data = make_api_call(messages, 500, custom_client=client)
         end_time = time.time()
         thinking_time = end_time - start_time
         total_thinking_time += thinking_time
@@ -96,7 +109,7 @@ Example response format:
     })
     
     start_time = time.time()
-    final_solution = make_api_call(messages, 1500, is_final_answer=True, custom_client=custom_client)
+    final_solution = make_api_call(messages, 1500, is_final_answer=True, custom_client=client)
     end_time = time.time()
     thinking_time = end_time - start_time
     total_thinking_time += thinking_time
@@ -122,7 +135,7 @@ class SolInfo:
         base, ext = solution_path.rsplit('.', 1)
         return f"{base}_extracted.{ext}"
 
-def get_solutions_with_reasoning(sol_info):
+def get_solutions_with_reasoning(sol_info, client=None):
     solutions = {}
     for bug_name in tqdm(sol_info.dataset.keys()):
         solutions[bug_name] = {}
@@ -133,7 +146,7 @@ def get_solutions_with_reasoning(sol_info):
         for _ in range(sol_info.sample_size):
             steps = []
             final_time = None
-            for step_result, total_time in generate_reasoned_solution(prompt,num_patches=sol_info.patch_num):
+            for step_result, total_time in generate_reasoned_solution(prompt, client, num_patches=sol_info.patch_num):
                 steps = step_result
                 final_time = total_time
             

@@ -5,8 +5,26 @@ import concurrent.futures
 import asyncio
 from datetime import datetime
 from sf_auto_eval import evaluate_patches
+import groq
+from dotenv import load_dotenv
 
-def process_bug(bug_name, patch_num, sample_size=1):
+load_dotenv()
+
+def create_groq_client(key_index):
+    """Create a Groq client with the specified API key index"""
+    key = os.getenv(f"GROQ_API_KEY_{key_index}")
+    if not key:
+        raise ValueError(f"GROQ_API_KEY_{key_index} not found in environment variables")
+    return groq.Groq(api_key=key)
+
+def get_available_client_count():
+    """Count how many Groq API keys are available"""
+    count = 0
+    while os.getenv(f"GROQ_API_KEY_{count + 1}"):
+        count += 1
+    return count
+
+def process_bug(bug_name, patch_num, client_index, sample_size=1):
     """
     Generate solutions and patches for a single bug, then run auto_eval on the patch file.
     
@@ -39,21 +57,32 @@ def process_bug(bug_name, patch_num, sample_size=1):
     }
 
     # 1. Generate Solutions
-    print(f"[INFO] Generating solutions for bug: {bug_name}")
+    print(f"[INFO] Generating solutions for bug: {bug_name} using client {client_index}")
     try:
-        cmd_solution = (
-            f"python src/sf_gen_solution_reasoned.py "
-            f"-d datasets/defects4j-sf.json "
-            f"-o {solution_file} "
-            f"-s {sample_size} "
-            f"-bug {bug_name} "
-            f"-patch_num {patch_num}"
+        client = create_groq_client(client_index)
+        
+        from sf_gen_solution_reasoned import get_solutions_with_reasoning, SolInfo, extract_solutions
+        
+        sol_info = SolInfo(
+            dataset_path="datasets/defects4j-sf.json",
+            solution_path=solution_file,
+            extracted_solution_path=extracted_solution_file,
+            sample_size=sample_size,
+            target_bug=bug_name,
+            patch_num=patch_num
         )
-        subprocess.run(cmd_solution, shell=True, check=True)
+        solutions = get_solutions_with_reasoning(sol_info, client)
+        with open(solution_file, 'w') as f:
+            json.dump(solutions, f, indent=2)
+            
+        extracted_solutions = extract_solutions(solutions)
+        with open(extracted_solution_file, 'w') as f:
+            json.dump(extracted_solutions, f, indent=2)
+            
         bug_result["solution_generation_status"] = "Success"
     except subprocess.CalledProcessError as e:
         bug_result["solution_generation_status"] = f"Error: {e}"
-        print(f"[ERROR] Solution generation failed for {bug_name}")
+        print(f"[ERROR] Solution generation failed for {bug_name}: {e}")
 
     # 2. Generate Patches
     print(f"[INFO] Generating patches for bug: {bug_name}")
@@ -75,11 +104,25 @@ def process_bug(bug_name, patch_num, sample_size=1):
         try:
             auto_eval_dict = asyncio.run(evaluate_patches(bug_name, patch_file))
             bug_result["auto_eval_results"] = auto_eval_dict.get(bug_name, [])
+            
+            validation_statuses = [result.get("patch_validation_status") for result in bug_result["auto_eval_results"]]
+            
+            if "CORRECT" in validation_statuses:
+                bug_result["final_result"] = "CORRECT"
+            elif "PLAUSIBLE" in validation_statuses:
+                bug_result["final_result"] = "PLAUSIBLE"
+            else:
+                bug_result["final_result"] = "INCORRECT"
+                
         except Exception as e:
             bug_result["auto_eval_results"] = f"Error during evaluation: {e}"
+            bug_result["final_result"] = "INCORRECT"
             print(f"[ERROR] Evaluation failed for {bug_name}: {e}")
     else:
         bug_result["auto_eval_results"] = "No patch file found, skipping evaluation."
+        bug_result["final_result"] = "INCORRECT"
+    
+    
     
     return bug_result
 
@@ -97,6 +140,11 @@ def generate_dataset_results(patch_num, bug_names, chunk_size=3):
     Returns:
         str: Path to the final JSON results file
     """
+    load_dotenv()
+    num_clients = get_available_client_count()
+    if num_clients == 0:
+        raise ValueError("No Groq API keys found in environment variables")
+    
     results_summary = {
         "timestamp": datetime.now().isoformat(),
         "patch_num": patch_num,
@@ -119,7 +167,13 @@ def generate_dataset_results(patch_num, bug_names, chunk_size=3):
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=chunk_size) as executor:
             future_to_bug = {
-                executor.submit(process_bug, b, patch_num, 1): b
+                executor.submit(
+                    process_bug, 
+                    b, 
+                    patch_num, 
+                    (chunk.index(b) % num_clients) + 1, 
+                    1
+                ): b
                 for b in chunk
             }
             for future in concurrent.futures.as_completed(future_to_bug):
@@ -166,7 +220,8 @@ if __name__ == '__main__':
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
     
-    subset_data=list(data.keys())[:50]
+    #subset_data=list(data.keys())[:50]
+    subset_data=["Cli-14","Cli-15","Cli-17"]
     final_path = generate_dataset_results(
         patch_num=3,
         bug_names=subset_data
