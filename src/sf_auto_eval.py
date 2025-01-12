@@ -112,7 +112,8 @@ Explain your reasoning step by step, then conclude with your classification.
         top_k=20,
         candidate_count=1,
         stop_sequences=["STOP!"],
-        seed=42
+        seed=42,
+        
     )
 
     # First LLM call to get reasoning/analysis

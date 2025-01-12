@@ -221,6 +221,7 @@ if __name__ == '__main__':
         data = json.load(file)
     
     subset_data=list(data.keys())[100:150]
+    #subset_data=['Closure-35']
     final_path = generate_dataset_results(
         patch_num=3,
         bug_names=subset_data
