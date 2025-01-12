@@ -17,40 +17,69 @@ def get_client():
     if not api_key:
         raise ValueError(f"GROQ_API_KEY_{client_index} not found in environment variables")
     return groq.Groq(api_key=api_key)
+def get_all_clients():
+    """Get all available Groq clients"""
+    clients = []
+    index = 1
+    while True:
+        api_key = os.getenv(f'GROQ_API_KEY_{index}')
+        if not api_key:
+            break
+        clients.append(groq.Groq(api_key=api_key))
+        index += 1
+    return clients
 
 client = get_client()
 
 def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=None):
-    global client
-    if custom_client is not None:
-        client = custom_client
+    # Get all available clients
+    all_clients = get_all_clients()
+    if not all_clients:
+        raise ValueError("No Groq API keys found in environment variables")
     
-    for attempt in range(3):
-        try:
-            if is_final_answer:
-                response = client.chat.completions.create(
-                    model="llama-3.1-70b-versatile",
-                    messages=messages,
-                    max_tokens=max_tokens,
-                    temperature=0.9,
-                ) 
-                return response.choices[0].message.content
-            else:
-                response = client.chat.completions.create(
-                    model="llama-3.1-70b-versatile",
-                    messages=messages,
-                    max_tokens=max_tokens,
-                    temperature=0.9,
-                    response_format={"type": "json_object"}
-                )
-                return json.loads(response.choices[0].message.content)
-        except Exception as e:
-            if attempt == 2:
+    # If custom_client is provided, try it first
+    if custom_client is not None:
+        all_clients.insert(0, custom_client)
+    
+    # Try each client until success or all clients fail
+    last_error = None
+    for client in all_clients:
+        for attempt in range(3):
+            try:
                 if is_final_answer:
-                    return {"title": "Error", "content": f"Failed to generate final answer after 3 attempts. Error: {str(e)}"}
+                    response = client.chat.completions.create(
+                        model="llama-3.1-70b-versatile",
+                        messages=messages,
+                        max_tokens=max_tokens,
+                        temperature=0.9,
+                    ) 
+                    result = response.choices[0].message.content
+                    if isinstance(result, dict):  
+                        raise ValueError("Received dict instead of string")
+                    return result
                 else:
-                    return {"title": "Error", "content": f"Failed to generate step after 3 attempts. Error: {str(e)}", "next_action": "final_answer"}
-            time.sleep(1)
+                    response = client.chat.completions.create(
+                        model="llama-3.1-70b-versatile",
+                        messages=messages,
+                        max_tokens=max_tokens,
+                        temperature=0.9,
+                        response_format={"type": "json_object"}
+                    )
+                    return json.loads(response.choices[0].message.content)
+            except Exception as e:
+                last_error = e
+                if attempt < 2:  
+                    time.sleep(1)
+                continue  
+    
+    if is_final_answer:
+        return f"Error: Failed to generate final answer after trying all available clients. Last error: {str(last_error)}"
+    else:
+        return {
+            "title": "Error", 
+            "content": f"Failed to generate step after trying all available clients. Last error: {str(last_error)}", 
+            "next_action": "final_answer"
+        }
 
 def generate_reasoned_solution(prompt, client=None, num_patches=3):
     if client is None:
