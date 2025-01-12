@@ -21,7 +21,7 @@ def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=Non
                     model="llama-3.1-70b-versatile",
                     messages=messages,
                     max_tokens=max_tokens,
-                    temperature=0.2,
+                    temperature=0.9,
                 ) 
                 return response.choices[0].message.content
             else:
@@ -29,7 +29,7 @@ def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=Non
                     model="llama-3.1-70b-versatile",
                     messages=messages,
                     max_tokens=max_tokens,
-                    temperature=0.2,
+                    temperature=0.9,
                     response_format={"type": "json_object"}
                 )
                 return json.loads(response.choices[0].message.content)
@@ -92,7 +92,7 @@ Example response format:
 
     messages.append({
         "role": "user", 
-        "content": f"Based on your reasoning above, provide a final detailed solution with:\n1. Root Cause Analysis\n2. {num_patches} distinct repair suggestions\nFormat as 'Root Cause: {{description}}' followed by 'Suggestion 1: {{title}}\n{{details}}' etc."
+        "content": f"Based on your reasoning above, provide a final detailed solution with:\n1. Root Cause Analysis\n2. ONLY {num_patches} distinct repair suggestions, NOTHING MORE, NOTHING LESS\nFormat as 'Root Cause: {{description}}' followed by 'Suggestion 1: {{title}}\n{{details}}' etc."
     })
     
     start_time = time.time()

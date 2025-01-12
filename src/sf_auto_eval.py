@@ -11,9 +11,17 @@ load_dotenv()
 
 class PatchInfo(BaseModel):
   patch_type: str
+  
+api_keys = [os.getenv(f'GEMINI_API_KEY_{i}') for i in range(1, 4)]  # Assumes GEMINI_API_KEY_1 through GEMINI_API_KEY_10
+clients = [genai.Client(api_key=key) for key in api_keys]
+current_client_index = 0
 
-api_key = os.getenv('GEMINI_API_KEY')
-client = genai.Client(api_key=api_key)
+async def get_next_client():
+    global current_client_index
+    client = clients[current_client_index]
+    current_client_index = (current_client_index + 1) % len(clients)
+    return client
+
 
 async def evaluate_single_patch(bug_name: str, generated_patch: str) -> dict:
     """
@@ -26,6 +34,8 @@ async def evaluate_single_patch(bug_name: str, generated_patch: str) -> dict:
     Returns:
         dict: Contains prompt, analysis, and classification
     """
+    client = await get_next_client()
+    
     file_path = r"D:\Repair-Of-Thought\datasets\defects4j-sf.json"
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
@@ -97,11 +107,12 @@ Explain your reasoning step by step, then conclude with your classification.
 """
 
     generation_config = types.GenerateContentConfig(
-        temperature=0.9,
+        temperature=0,
         top_p=0.95,
         top_k=20,
         candidate_count=1,
-        stop_sequences=["STOP!"]
+        stop_sequences=["STOP!"],
+        seed=42
     )
 
     # First LLM call to get reasoning/analysis
@@ -125,6 +136,7 @@ Output: {response.text}"""
         config=types.GenerateContentConfig(
             response_mime_type='application/json',
             response_schema=PatchInfo,
+            seed=42
         )
     )
 
