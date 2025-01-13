@@ -1,5 +1,9 @@
 {
   "Closure-71": {
-    "null": []
+    "The function checkPropertyVisibility is not correctly handling the case where a subclass is trying to override a private property of its superclass.": [
+      "Fixing the Visibility Check\nThe function checkPropertyVisibility should be modified to correctly handle the case where a subclass is trying to override a private property of its superclass. This can be done by adding a check to see if the property is being overridden by a subclass, and if so, reporting an error if the property is private.",
+      "Modifying the isOverride Variable\nThe variable isOverride is currently set to true only if the property is being assigned in the global scope. However, this is not sufficient to correctly handle the case where a subclass is trying to override a private property of its superclass. The variable isOverride should be modified to also check if the property is being overridden by a subclass.",
+      "Adding a Check for Private Properties in Subclasses\nThe function checkPropertyVisibility should be modified to add a check for private properties in subclasses. If a subclass is trying to override a private property of its superclass, the function should report an error. This can be done by adding a check to see if the property is private and if the current class is a subclass of the class that owns the property."
+    ]
   }
 }

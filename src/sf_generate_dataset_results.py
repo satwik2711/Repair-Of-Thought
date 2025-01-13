@@ -8,7 +8,9 @@ from sf_auto_eval import evaluate_patches
 import groq
 from dotenv import load_dotenv
 
-load_dotenv()
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+dotenv_path = os.path.join(root_dir, '.env')
+load_dotenv(dotenv_path)
 
 def create_groq_client(key_index):
     """Create a Groq client with the specified API key index"""
@@ -71,7 +73,7 @@ def process_bug(bug_name, patch_num, client_index, sample_size=1):
             target_bug=bug_name,
             patch_num=patch_num
         )
-        solutions = get_solutions_with_reasoning(sol_info, client)
+        solutions = get_solutions_with_reasoning(sol_info, None)
         with open(solution_file, 'w') as f:
             json.dump(solutions, f, indent=2)
             
@@ -141,9 +143,6 @@ def generate_dataset_results(patch_num, bug_names, chunk_size=3):
         str: Path to the final JSON results file
     """
     load_dotenv()
-    num_clients = get_available_client_count()
-    if num_clients == 0:
-        raise ValueError("No Groq API keys found in environment variables")
     
     results_summary = {
         "timestamp": datetime.now().isoformat(),
@@ -171,7 +170,7 @@ def generate_dataset_results(patch_num, bug_names, chunk_size=3):
                     process_bug, 
                     b, 
                     patch_num, 
-                    (chunk.index(b) % num_clients) + 1, 
+                    1, 
                     1
                 ): b
                 for b in chunk

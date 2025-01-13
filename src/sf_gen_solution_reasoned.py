@@ -7,83 +7,120 @@ from tqdm import tqdm
 import os
 from gen_solution_prompt import sf_construct_prompt
 from dotenv import load_dotenv
+import requests
+from typing import Optional,Dict,Any
 
-load_dotenv()
 
-def get_client():
-    """Get Groq client based on environment variable"""
-    client_index = os.getenv('GROQ_CLIENT_INDEX', '1')
-    api_key = os.getenv(f'GROQ_API_KEY_{client_index}')
-    if not api_key:
-        raise ValueError(f"GROQ_API_KEY_{client_index} not found in environment variables")
-    return groq.Groq(api_key=api_key)
-def get_all_clients():
-    """Get all available Groq clients"""
-    clients = []
-    index = 1
-    while True:
-        api_key = os.getenv(f'GROQ_API_KEY_{index}')
-        if not api_key:
-            break
-        clients.append(groq.Groq(api_key=api_key))
-        index += 1
-    return clients
 
-client = get_client()
+def send_llama_request(
+    prompt: str,
+    api_url: str = os.getenv('SELF_API_URL'),
+    app_id: str = os.getenv('SELF_API_ID'),
+    auth_token: str = f"Access {os.getenv('SELF_API_TOKEN')}"
+) -> Optional[Dict[str, Any]]:
+    """Send a request to the LLaMA model API."""
+    
+    try:
+        headers = {
+            'Content-Type': 'application/json',
+            'x-app-id': app_id,
+            'authorization': f"Access {auth_token}"
+        }
+        
+        data = {
+            "question": prompt,
+            "temperature": 0
+        }
+        
+        
+        response = requests.post(api_url, headers=headers, data=json.dumps(data))
+        response.raise_for_status()
+        
+        json_response = response.json()
+        print(f"[DEBUG] Response received and parsed successfully")
+        
+        return json_response["messages"][0].get("answer")
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[ERROR] API Request failed: {str(e)}")
+        if hasattr(e.response, 'text'):
+            print(f"[ERROR] Response text: {e.response.text}")
+        return None
+    except json.JSONDecodeError as e:
+        print(f"[ERROR] Failed to parse API response: {str(e)}")
+        return None
+    except Exception as e:
+        print(f"[ERROR] An unexpected error occurred: {str(e)}")
+        print(f"[ERROR] Error type: {type(e)}")
+        return None
+
+def get_api_details():
+    """Get API details from environment variables"""
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dotenv_path = os.path.join(root_dir, '.env')
+    load_dotenv(dotenv_path)
+    
+    api_url = os.getenv('SELF_API_URL')
+    app_id = os.getenv('SELF_API_ID')
+    auth_token = os.getenv('SELF_API_TOKEN')
+    
+    missing_vars = []
+    if not api_url:
+        missing_vars.append('SELF_API_URL')
+    if not app_id:
+        missing_vars.append('SELF_API_ID')
+    if not auth_token:
+        missing_vars.append('SELF_API_TOKEN')
+    
+    if missing_vars:
+        error_msg = f"Missing required API environment variables: {', '.join(missing_vars)}"
+        print(f"[ERROR] {error_msg}")
+        raise ValueError(error_msg)
+    
+    return api_url, app_id, auth_token
 
 def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=None):
-    # Get all available clients
-    all_clients = get_all_clients()
-    if not all_clients:
-        raise ValueError("No Groq API keys found in environment variables")
+    api_url, app_id, auth_token = get_api_details()
+    # Convert messages to prompt format
+    prompt = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
     
-    # If custom_client is provided, try it first
-    if custom_client is not None:
-        all_clients.insert(0, custom_client)
+    last_error = None  # Add this to track the last error
     
-    # Try each client until success or all clients fail
-    last_error = None
-    for client in all_clients:
-        for attempt in range(3):
-            try:
-                if is_final_answer:
-                    response = client.chat.completions.create(
-                        model="llama-3.1-70b-versatile",
-                        messages=messages,
-                        max_tokens=max_tokens,
-                        temperature=0.9,
-                    ) 
-                    result = response.choices[0].message.content
-                    if isinstance(result, dict):  
-                        raise ValueError("Received dict instead of string")
-                    return result
-                else:
-                    response = client.chat.completions.create(
-                        model="llama-3.1-70b-versatile",
-                        messages=messages,
-                        max_tokens=max_tokens,
-                        temperature=0.9,
-                        response_format={"type": "json_object"}
-                    )
-                    return json.loads(response.choices[0].message.content)
-            except Exception as e:
-                last_error = e
-                if attempt < 2:  
-                    time.sleep(1)
-                continue  
-    
+    for attempt in range(3):
+        try:
+            response = send_llama_request(
+                prompt=prompt,
+                api_url=api_url,
+                app_id=app_id,
+                auth_token=auth_token
+            )
+            
+            if response is None:
+                raise ValueError("Empty response from API")
+                
+            if is_final_answer:
+                return response
+            else:
+                return json.loads(response)
+                
+        except Exception as e:
+            last_error = e  # Store the error
+            if attempt < 2:
+                time.sleep(1)
+            continue
+            
+    # Now we can safely reference last_error
     if is_final_answer:
-        return f"Error: Failed to generate final answer after trying all available clients. Last error: {str(last_error)}"
+        return f"Error: Failed to generate response after 3 attempts. Last error: {str(last_error)}"
     else:
         return {
-            "title": "Error", 
-            "content": f"Failed to generate step after trying all available clients. Last error: {str(last_error)}", 
+            "title": "Error",
+            "content": f"Failed to generate response after 3 attempts. Last error: {str(last_error)}",
             "next_action": "final_answer"
         }
 
 def generate_reasoned_solution(prompt, client=None, num_patches=3):
-    if client is None:
-        client = get_client()
+
     messages = [
         {"role": "system", "content": """You are an expert software developer and debugger that explains your reasoning step by step. For each step, provide a title that describes what you're doing in that step, along with the content. Decide if you need another step or if you're ready to give the final solution. Respond in JSON format with 'title', 'content', and 'next_action' (either 'continue' or 'final_answer') keys. 
 

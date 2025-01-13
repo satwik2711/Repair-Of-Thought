@@ -1,5 +1,9 @@
 {
   "Closure-97": {
-    "null": []
+    "The issue lies in the way the function handles unsigned right shift operations. When the left operand is -1 and the shift amount is 0, the function should return 4294967295 (0xffffffff), but instead it returns -1. This is because the function is using the >>> operator, which performs an unsigned right shift on the bits of the left operand. However, the function is not correctly handling the case where the left operand is -1, which is equivalent to 4294967295 in two's complement representation.": [
+      "Masking the Left Operand\nThe function can be modified to mask the left operand with 0xffffffff before performing the unsigned right shift operation. This will ensure that the left operand is treated as an unsigned 32-bit integer, and the correct result will be returned.\n\n```java\ncase Token.URSH:\n    result = (lvalInt & 0xffffffff) >>> rvalInt;\n    break;\n```",
+      "Using a Long Literal\nThe function can be modified to use a long literal to represent the left operand when performing the unsigned right shift operation. This will ensure that the left operand is treated as a 64-bit integer, and the correct result will be returned.\n\n```java\ncase Token.URSH:\n    result = (long) lvalInt >>> rvalInt;\n    break;\n```",
+      "Adding a Special Case for -1\nThe function can be modified to add a special case for when the left operand is -1. In this case, the function can return 4294967295 (0xffffffff) directly, without performing the unsigned right shift operation.\n\n```java\ncase Token.URSH:\n    if (lvalInt == -1) {\n        result = 4294967295;\n    } else {\n        result = lvalInt >>> rvalInt;\n    }\n    break;\n```"
+    ]
   }
 }

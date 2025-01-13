@@ -1,5 +1,9 @@
 {
   "Closure-86": {
-    "null": []
+    "The root cause of the bug is in the case Token.NEW of the switch statement in the function evaluatesToLocalValue. The function is currently returning true for all new expressions, regardless of whether the object is aliased or not.": [
+      "Check for Aliased New Expressions\nWe can modify the case Token.NEW to check whether the object is aliased or not. If the object is aliased, we return false, indicating that the new expression has a global side-effect. If the object is not aliased, we return true, indicating that the new expression does not have a global side-effect.",
+      "Use a More Precise Heuristic\nWe can use a more precise heuristic to determine whether a new expression has a global side-effect. For example, we can check whether the object is assigned to a global variable or whether it is passed as an argument to a function that has a global side-effect.",
+      "Introduce a New Flag\nWe can introduce a new flag to indicate whether a new expression has a global side-effect. We can set this flag to true when we encounter a new expression that has a global side-effect, and false otherwise. We can then use this flag to determine whether the new expression has a global side-effect."
+    ]
   }
 }

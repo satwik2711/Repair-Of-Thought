@@ -1,6 +1,14 @@
 {
   "Codec-17": {
-    "prompt": [],
-    "patches": []
+    "prompt": [
+      "// Provide a fix for the buggy function.\nRoot cause: The function newStringIso8859_1 does not handle null input correctly, throwing a NullPointerException when the input byte array is null.\nSuggestion: Add Null Check\nAdd a null check before calling the String constructor to handle null input correctly. If the input byte array is null, return null immediately.\n\n```java\npublic static String newStringIso8859_1(final byte[] bytes) {\n    if (bytes == null) {\n        return null;\n    }\n    return new String(bytes, Charsets.ISO_8859_1);\n}\n```\n// Buggy Function\npublic static String newStringIso8859_1(final byte[] bytes) {\n    return new String(bytes, Charsets.ISO_8859_1);\n}\n// Fixed Function",
+      "// Provide a fix for the buggy function.\nRoot cause: The function newStringIso8859_1 does not handle null input correctly, throwing a NullPointerException when the input byte array is null.\nSuggestion: Use Optional Class\nUse the Optional class to handle the null input. If the input byte array is null, return an empty Optional. Otherwise, return an Optional containing the decoded string.\n\n```java\npublic static Optional<String> newStringIso8859_1(final byte[] bytes) {\n    return Optional.ofNullable(bytes).map(b -> new String(b, Charsets.ISO_8859_1));\n}\n```\n// Buggy Function\npublic static String newStringIso8859_1(final byte[] bytes) {\n    return new String(bytes, Charsets.ISO_8859_1);\n}\n// Fixed Function",
+      "// Provide a fix for the buggy function.\nRoot cause: The function newStringIso8859_1 does not handle null input correctly, throwing a NullPointerException when the input byte array is null.\nSuggestion: Use Different String Constructor\nUse a different constructor of the String class that can handle null input. The String constructor that takes a byte array and a charset can handle null input, but it throws a NullPointerException if the charset is null. We can use this constructor and add a null check for the charset.\n\n```java\npublic static String newStringIso8859_1(final byte[] bytes) {\n    if (Charsets.ISO_8859_1 == null) {\n        throw new NullPointerException(\"Charset is null\");\n    }\n    return new String(bytes, Charsets.ISO_8859_1);\n}\n```\n// Buggy Function\npublic static String newStringIso8859_1(final byte[] bytes) {\n    return new String(bytes, Charsets.ISO_8859_1);\n}\n// Fixed Function"
+    ],
+    "patches": [
+      "public static String newStringIso8859_1(final byte[] bytes) {\n    if (bytes == null) {\n        return null;\n    }\n    return new String(bytes, Charsets.ISO_8859_1);\n}",
+      "public static String newStringIso8859_1(final byte[] bytes) {\n    return bytes == null ? null : new String(bytes, Charsets.ISO_8859_1);\n}",
+      "public static String newStringIso8859_1(final byte[] bytes) {\n    if (bytes == null) {\n        return null;\n    }\n    return new String(bytes, Charsets.ISO_8859_1);\n}"
+    ]
   }
 }
