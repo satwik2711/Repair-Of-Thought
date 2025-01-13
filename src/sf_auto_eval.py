@@ -108,8 +108,6 @@ Explain your reasoning step by step, then conclude with your classification.
 
     generation_config = types.GenerateContentConfig(
         temperature=0,
-        top_p=0.95,
-        top_k=20,
         candidate_count=1,
         stop_sequences=["STOP!"],
         seed=42

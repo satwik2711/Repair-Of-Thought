@@ -6,6 +6,9 @@ import argparse
 from tqdm import tqdm
 import os
 from gen_solution_prompt import sf_construct_prompt
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = groq.Groq()
 
@@ -21,7 +24,7 @@ def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=Non
                     model="llama-3.1-70b-versatile",
                     messages=messages,
                     max_tokens=max_tokens,
-                    temperature=0.9,
+                    temperature=0.2,
                 ) 
                 return response.choices[0].message.content
             else:
@@ -29,7 +32,7 @@ def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=Non
                     model="llama-3.1-70b-versatile",
                     messages=messages,
                     max_tokens=max_tokens,
-                    temperature=0.9,
+                    temperature=0.2,
                     response_format={"type": "json_object"}
                 )
                 return json.loads(response.choices[0].message.content)

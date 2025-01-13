@@ -84,8 +84,7 @@ def togetherai_model_apr(apr_info):
                         model=model_name,
                         messages=[{"role": "user", "content": prompt}],
                         max_tokens=512,
-                        temperature=0.8,
-                        top_p=0.9,
+                        temperature=0.2,
                     )
 
                     # Access the generated text

@@ -15,7 +15,8 @@ def main():
     )
     
     # User inputs
-    sample_size = st.number_input("Number of solution samples to generate", min_value=1, max_value=5, value=1)
+    # sample_size = st.number_input("Number of solution samples to generate", min_value=1, max_value=5, value=1)
+    sample_size = 1
     num_patches = st.number_input("Number of patches to generate", min_value=1, max_value=10, value=1)
     bug_name = st.text_input("Specify the bug ID to generate a solution for (e.g., Math-2)")
 
@@ -84,37 +85,37 @@ def main():
 
     # Display Results
     if bug_name:
-        if os.path.exists(solution_file):
-            st.write("### Generated Solutions with Reasoning")
-            with open(solution_file, "r") as f:
-                solutions = json.load(f)
+        # if os.path.exists(solution_file):
+        #     st.write("### Generated Solutions with Reasoning")
+        #     with open(solution_file, "r") as f:
+        #         solutions = json.load(f)
                 
-                # Display original bug information
-                if 'prompt' in solutions.get(bug_name, {}):
-                    with st.expander("Original Bug Information", expanded=False):
-                        st.code(solutions[bug_name]['prompt'], language='text')
+        #         # Display original bug information
+        #         if 'prompt' in solutions.get(bug_name, {}):
+        #             with st.expander("Original Bug Information", expanded=False):
+        #                 st.code(solutions[bug_name]['prompt'], language='text')
                 
-                # Display solutions with reasoning
-                for idx, solution in enumerate(solutions.get(bug_name, {}).get('solutions', []), 1):
-                    st.write(f"#### Solution {idx}")
+        #         # Display solutions with reasoning
+        #         for idx, solution in enumerate(solutions.get(bug_name, {}).get('solutions', []), 1):
+        #             st.write(f"#### Solution {idx}")
                     
-                    # Display reasoning steps
-                    reasoning_steps = solution.get('reasoning_steps', "").split('\n\n')
-                    for step in reasoning_steps:
-                        if step.strip():
-                            parts = step.split('\n', 1)
-                            title = parts[0]
-                            content = parts[1] if len(parts) > 1 else "No additional content provided."
-                            with st.expander(title, expanded=True):
-                                st.markdown(content)
+        #             # Display reasoning steps
+        #             reasoning_steps = solution.get('reasoning_steps', "").split('\n\n')
+        #             for step in reasoning_steps:
+        #                 if step.strip():
+        #                     parts = step.split('\n', 1)
+        #                     title = parts[0]
+        #                     content = parts[1] if len(parts) > 1 else "No additional content provided."
+        #                     with st.expander(title, expanded=True):
+        #                         st.markdown(content)
                     
-                    # Display final solution
-                    with st.expander("Final Solution", expanded=True):
-                        st.markdown(solution.get('final_solution', "No final solution provided."))
+        #             # Display final solution
+        #             with st.expander("Final Solution", expanded=True):
+        #                 st.markdown(solution.get('final_solution', "No final solution provided."))
                     
-                    # Display timing information
-                    st.info(f"Total thinking time: {solution.get('total_time', 0):.2f} seconds")
-                    st.divider()
+        #             # Display timing information
+        #             st.info(f"Total thinking time: {solution.get('total_time', 0):.2f} seconds")
+        #             st.divider()
 
         if os.path.exists(validation_file):
             st.write("### Patch Validation Results")
@@ -123,20 +124,17 @@ def main():
 
                 if validation_results.get(bug_name):
                     for i, result in enumerate(validation_results[bug_name], 1):
-                        with st.expander(f"Validation Result for Patch {i}", expanded=False):
-                            st.write(f"**Validation Status**: {result['patch_validation_status']}")
-                            st.write(f"**Bug Name**: {result['bug_name']}")
-                            st.write(f"**Timestamp**: {result['timestamp']}")
-                            st.code(result['generated_patch'], language='java')
-                            
-                            # Instead of nested expander, use columns and a toggle
-                            st.write("---")  # Add a separator
-                            show_details = st.toggle('Show Prompt and Analysis', key=f"toggle_{i}")
-                            if show_details:
-                                st.write("#### Prompt")
-                                st.code(result['prompt'], language='text')
-                                st.write("#### Analysis")
-                                st.markdown(result['analysis'])
+                        st.write(f"## Patch {i}")
+                        st.write(f"**Validation Status**: {result['patch_validation_status']}")
+                        # st.write(f"**Bug Name**: {result['bug_name']}")
+                        # st.write(f"**Timestamp**: {result['timestamp']}")
+                        # st.code(result['generated_patch'], language='java')
+                        
+                        # st.write("### Prompt")
+                        # st.code(result['prompt'], language='text')
+                        # st.write("### Analysis")
+                        # st.markdown(result['analysis'])
+                        st.divider()  # Add a separator between patches
 
 if __name__ == "__main__":
     main()
