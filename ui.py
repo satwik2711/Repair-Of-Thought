@@ -17,7 +17,7 @@ def main():
     # User inputs
     # sample_size = st.number_input("Number of solution samples to generate", min_value=1, max_value=5, value=1)
     sample_size = 1
-    num_patches = st.number_input("Number of patches to generate", min_value=1, max_value=10, value=1)
+    num_patches = st.number_input("Number of patches to generate", min_value=1, max_value=10, value=3)
     bug_name = st.text_input("Specify the bug ID to generate a solution for (e.g., Math-2)")
 
     # Define output directories

@@ -12,7 +12,7 @@ load_dotenv()
 class PatchInfo(BaseModel):
   patch_type: str
   
-api_keys = [os.getenv(f'GEMINI_API_KEY_{i}') for i in range(1, 4)]  # Assumes GEMINI_API_KEY_1 through GEMINI_API_KEY_10
+api_keys = [os.getenv(f'GEMINI_API_KEY')]  # Assumes GEMINI_API_KEY_1 through GEMINI_API_KEY_10
 clients = [genai.Client(api_key=key) for key in api_keys]
 current_client_index = 0
 
@@ -36,7 +36,7 @@ async def evaluate_single_patch(bug_name: str, generated_patch: str) -> dict:
     """
     client = await get_next_client()
     
-    file_path = r"D:\Repair-Of-Thought\datasets\defects4j-sf.json"
+    file_path = r"./datasets/defects4j-sf.json"
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
 
