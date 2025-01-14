@@ -85,37 +85,49 @@ def main():
 
     # Display Results
     if bug_name:
-        # if os.path.exists(solution_file):
-        #     st.write("### Generated Solutions with Reasoning")
-        #     with open(solution_file, "r") as f:
-        #         solutions = json.load(f)
+        if os.path.exists(solution_file):
+            st.write("### Generated Solutions with Reasoning")
+            with open(solution_file, "r") as f:
+                solutions = json.load(f)
                 
-        #         # Display original bug information
-        #         if 'prompt' in solutions.get(bug_name, {}):
-        #             with st.expander("Original Bug Information", expanded=False):
-        #                 st.code(solutions[bug_name]['prompt'], language='text')
+                # Display original bug information
+                if 'prompt' in solutions.get(bug_name, {}):
+                    with st.expander("Original Bug Information", expanded=False):
+                        st.code(solutions[bug_name]['prompt'], language='text')
                 
-        #         # Display solutions with reasoning
-        #         for idx, solution in enumerate(solutions.get(bug_name, {}).get('solutions', []), 1):
-        #             st.write(f"#### Solution {idx}")
+                # Display solutions with reasoning
+                for idx, solution in enumerate(solutions.get(bug_name, {}).get('solutions', []), 1):
+                    st.write(f"#### Solution {idx}")
                     
-        #             # Display reasoning steps
-        #             reasoning_steps = solution.get('reasoning_steps', "").split('\n\n')
-        #             for step in reasoning_steps:
-        #                 if step.strip():
-        #                     parts = step.split('\n', 1)
-        #                     title = parts[0]
-        #                     content = parts[1] if len(parts) > 1 else "No additional content provided."
-        #                     with st.expander(title, expanded=True):
-        #                         st.markdown(content)
+                    # Display reasoning steps
+                    reasoning_steps = solution.get('reasoning_steps', "").split('\n\n')
+                    for step in reasoning_steps:
+                        if step.strip():
+                            parts = step.split('\n', 1)
+                            title = parts[0]
+                            content = parts[1] if len(parts) > 1 else "No additional content provided."
+                            with st.expander(title, expanded=True):
+                                st.markdown(content)
                     
-        #             # Display final solution
-        #             with st.expander("Final Solution", expanded=True):
-        #                 st.markdown(solution.get('final_solution', "No final solution provided."))
+                    # Display final solution
+                    with st.expander("Final Solution", expanded=True):
+                        st.markdown(solution.get('final_solution', "No final solution provided."))
                     
-        #             # Display timing information
-        #             st.info(f"Total thinking time: {solution.get('total_time', 0):.2f} seconds")
-        #             st.divider()
+                    # Display timing information
+                    st.info(f"Total thinking time: {solution.get('total_time', 0):.2f} seconds")
+                    st.divider()
+        if os.path.exists(patch_file):
+            st.write("### Generated Patches")
+            with open(patch_file, "r") as f:
+                patch_result = json.load(f)
+                
+                patches = patch_result.get(bug_name, {}).get("patches", [])
+                if patches:
+                    for i, patch in enumerate(patches, 1):
+                        with st.expander(f"Patch {i}", expanded=False):
+                            st.code(patch, language='java')
+                else:
+                    st.write("No patches generated.")
 
         if os.path.exists(validation_file):
             st.write("### Patch Validation Results")
