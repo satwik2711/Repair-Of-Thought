@@ -66,8 +66,13 @@ def main():
             if not os.path.exists(validation_file):
                 st.write(f"Validating patches for bug: {bug_name}...")
                 try:
-                    command = f"python3 src/sf_val2.py -i {patch_file} -o {validation_file} -d datasets/defects4j-sf.json -p correct_patch/defects4j-sf"
-                    subprocess.run(command, shell=True, check=True)
+                    from src.sf_auto_eval import evaluate_patches
+                    import asyncio
+                    
+                    with open(patch_file, 'r') as f:
+                        patch_data = json.load(f)
+                    
+                    results = asyncio.run(evaluate_patches(bug_name, patch_file))
                     st.success("Patches validated successfully")
                 except subprocess.CalledProcessError as e:
                     st.error(f"Error during patch validation: {e}")
@@ -122,6 +127,21 @@ def main():
                 else:
                     st.write("No patches generated.")
 
+        # if os.path.exists(validation_file):
+        #     st.write("### Patch Validation Results")
+        #     with open(validation_file, "r") as f:
+        #         validation_results = json.load(f)
+
+        #         if validation_results.get(bug_name):
+        #             for i, result in enumerate(validation_results[bug_name], 1):
+        #                 with st.expander(f"Validation Result for Patch {i}", expanded=False):
+        #                     # st.write(f"**Validation Status**: {result['patch_validation_status']}")
+        #                     # st.write(f"**Bug Name**: {result['bug_name']}")
+        #                     # st.write(f"**Timestamp**: {result['timestamp']}")
+        #                     # st.code(result['patch_code'], language='java')
+        #                     st.write(f"## Patch {i}")
+        #                     st.write(f"**Validation Status**: {result['patch_validation_status']}")
+        #                     st.write(f"**Bug Name**: {result['bug_name']}"
         if os.path.exists(validation_file):
             st.write("### Patch Validation Results")
             with open(validation_file, "r") as f:
@@ -129,14 +149,9 @@ def main():
 
                 if validation_results.get(bug_name):
                     for i, result in enumerate(validation_results[bug_name], 1):
-                        with st.expander(f"Validation Result for Patch {i}", expanded=False):
-                            st.write(f"**Validation Status**: {result['patch_validation_status']}")
-                            st.write(f"**Bug Name**: {result['bug_name']}")
-                            st.write(f"**Timestamp**: {result['timestamp']}")
-                            st.code(result['patch_code'], language='java')
-                            
-                else:
-                    st.write("No validation results available.")
+                        st.write(f"## Patch {i}")
+                        st.write(f"**Validation Status**: {result['patch_validation_status']}")
+                        st.divider()
 
 if __name__ == "__main__":
     main()
