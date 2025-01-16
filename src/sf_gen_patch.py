@@ -83,7 +83,7 @@ def togetherai_model_apr(apr_info):
                     response = client.chat.completions.create(
                         model=model_name,
                         messages=[{"role": "user", "content": prompt}],
-                        max_tokens=512,
+                        max_tokens=5120,
                         temperature=0.2,
                     )
 
