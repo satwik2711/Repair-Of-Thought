@@ -7,3 +7,4 @@ together
 streamlit
 groq
 google-genai
+python-dotenv

@@ -133,7 +133,7 @@ def main():
             st.write("### Patch Validation Results")
             with open(validation_file, "r") as f:
                 validation_results = json.load(f)
-                #Uncomment everything here AI!
+
                 if validation_results.get(bug_name):
                     for i, result in enumerate(validation_results[bug_name], 1):
                         st.write(f"## Patch {i}")

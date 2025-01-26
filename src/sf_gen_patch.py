@@ -4,6 +4,9 @@ import argparse
 import os
 from together import Together
 from gen_patch_prompt import sf_build_apr_prompt_auto
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Use a model suitable for code generation
 model_name = "Qwen/Qwen2.5-Coder-32B-Instruct"

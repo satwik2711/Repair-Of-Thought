@@ -21,7 +21,7 @@ def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=Non
         try:
             if is_final_answer:
                 response = client.chat.completions.create(
-                    model="llama-3.1-70b-versatile",
+                    model="llama-3.3-70b-versatile",
                     messages=messages,
                     max_tokens=max_tokens,
                     temperature=0.2,
@@ -29,7 +29,7 @@ def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=Non
                 return response.choices[0].message.content
             else:
                 response = client.chat.completions.create(
-                    model="llama-3.1-70b-versatile",
+                    model="llama-3.3-70b-versatile",
                     messages=messages,
                     max_tokens=max_tokens,
                     temperature=0.2,
