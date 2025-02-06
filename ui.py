@@ -3,6 +3,9 @@ import json
 import os
 import subprocess
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def main():
     st.title("Repair of Thought")
@@ -12,6 +15,16 @@ def main():
         This app performs the complete Automated Program Repair (APR) workflow with detailed reasoning steps.
         Input a bug name and sample size to generate solutions and patches, or view existing results.
         """
+    )
+    
+    
+    # API Key input with default from environment
+    default_api_key = os.getenv('GEMINI_API_KEY', '')
+    api_key = st.text_input(
+        "Gemini API Key", 
+        value=default_api_key,
+        type="password",
+        help="Enter your Gemini API key. The default value is loaded from environment variables if available."
     )
     
     # User inputs
@@ -74,7 +87,7 @@ def main():
                     with open(patch_file, 'r') as f:
                         patch_data = json.load(f)
                     
-                    results = asyncio.run(evaluate_patches(bug_name, patch_file))
+                    results = asyncio.run(evaluate_patches(bug_name, patch_file, api_key))
                     st.success("Patches validated successfully")
                 except Exception as e:
                     st.error(f"Error during patch validation: {e}")

@@ -12,29 +12,32 @@ load_dotenv()
 class PatchInfo(BaseModel):
   patch_type: str
   
-api_keys = [os.getenv(f'GEMINI_API_KEY')]  # Assumes GEMINI_API_KEY_1 through GEMINI_API_KEY_10
-clients = [genai.Client(api_key=key) for key in api_keys]
-current_client_index = 0
+# api_keys = [os.getenv(f'GEMINI_API_KEY')]  # Assumes GEMINI_API_KEY_1 through GEMINI_API_KEY_10
+# clients = [genai.Client(api_key=key) for key in api_keys]
+# current_client_index = 0
 
-async def get_next_client():
-    global current_client_index
-    client = clients[current_client_index]
-    current_client_index = (current_client_index + 1) % len(clients)
+# Replace with a single client that uses the provided API key
+client = None
+
+async def get_next_client(api_key):
+    global client
+    if client is None:
+        client = genai.Client(api_key=api_key)
     return client
 
-
-async def evaluate_single_patch(bug_name: str, generated_patch: str) -> dict:
+async def evaluate_single_patch(bug_name: str, generated_patch: str, api_key: str) -> dict:
     """
     Evaluate a single generated patch against a bug's ground truth asynchronously.
     
     Args:
         bug_name: Name of the bug (e.g. "Math-2")
         generated_patch: The patch code to evaluate
+        api_key: Gemini API key to use for this evaluation
 
     Returns:
         dict: Contains prompt, analysis, and classification
     """
-    client = await get_next_client()
+    client = await get_next_client(api_key)
     
     file_path = r"./datasets/defects4j-sf.json"
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -147,13 +150,14 @@ Output: {response.text}"""
         "generated_patch": generated_patch
     }
 
-async def evaluate_patches(bug_name: str, generated_patch_file: str) -> list[dict]:
+async def evaluate_patches(bug_name: str, generated_patch_file: str, api_key: str) -> list[dict]:
     """
     Evaluate multiple generated patches for a given bug_name asynchronously.
     
     Args:
         bug_name: Name of the bug
         generated_patch_file: Path to the JSON file containing patches
+        api_key: Gemini API key to use for evaluation
 
     Returns:
         A list of dictionaries containing evaluation results
@@ -165,7 +169,7 @@ async def evaluate_patches(bug_name: str, generated_patch_file: str) -> list[dic
     generated_patches = patch_data.get(bug_name, {}).get('patches', [])
     
     tasks = [
-        evaluate_single_patch(bug_name, patch)
+        evaluate_single_patch(bug_name, patch, api_key)
         for patch in generated_patches
     ]
     results = await asyncio.gather(*tasks)
