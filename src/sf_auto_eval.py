@@ -119,7 +119,7 @@ Explain your reasoning step by step, then conclude with your classification.
     # First LLM call to get reasoning/analysis
     response = await client.aio.models.generate_content(
         model='gemini-2.0-flash-thinking-exp-1219',
-        contents=types.Part.from_text(prompt),
+        contents=types.Part(text=prompt),
         config=generation_config
     )
 

@@ -7,67 +7,131 @@ from tqdm import tqdm
 import os
 from gen_solution_prompt import sf_construct_prompt
 from dotenv import load_dotenv
+import requests
+from typing import Optional
 
 load_dotenv()
 
-client = groq.Groq()
-
-def make_api_call(messages, max_tokens, is_final_answer=False, custom_client=None):
-    global client
-    if custom_client is not None:
-        client = custom_client
+def send_llama_request(
+    prompt: str,
+    api_url: str = None,
+    app_id: str = None,
+    auth_token: str = None
+) -> Optional[str]:
+    """Send a request to the self-hosted LLaMA model API."""
     
-    for attempt in range(3):
-        try:
-            if is_final_answer:
-                response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=messages,
-                    max_tokens=max_tokens,
-                    temperature=0.2,
-                ) 
-                return response.choices[0].message.content
-            else:
-                response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=messages,
-                    max_tokens=max_tokens,
-                    temperature=0.2,
-                    response_format={"type": "json_object"}
-                )
-                return json.loads(response.choices[0].message.content)
-        except Exception as e:
-            if attempt == 2:
-                if is_final_answer:
-                    return {"title": "Error", "content": f"Failed to generate final answer after 3 attempts. Error: {str(e)}"}
-                else:
-                    return {"title": "Error", "content": f"Failed to generate step after 3 attempts. Error: {str(e)}", "next_action": "final_answer"}
-            time.sleep(1)
+    if api_url is None or app_id is None or auth_token is None:
+        raise ValueError("API details must be provided")
+    
+    try:
+        headers = {
+            'Content-Type': 'application/json',
+            'x-app-id': app_id,
+            'authorization': f"Access {auth_token}"
+        }
+        
+        data = {
+            "question": prompt,
+            "temperature": 0
+        }
+        
+        response = requests.post(api_url, headers=headers, data=json.dumps(data))
+        response.raise_for_status()
+        
+        json_response = response.json()
+        print(f"[DEBUG] Response received and parsed successfully")
+        
+        # Assumes the API returns a messages list with an "answer"
+        return json_response["messages"][0].get("answer")
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[ERROR] API Request failed: {str(e)}")
+        if hasattr(e.response, 'text'):
+            print(f"[ERROR] Response text: {e.response.text}")
+        return None
+    except json.JSONDecodeError as e:
+        print(f"[ERROR] Failed to parse API response: {str(e)}")
+        return None
+    except Exception as e:
+        print(f"[ERROR] An unexpected error occurred: {str(e)}")
+        print(f"[ERROR] Error type: {type(e)}")
+        return None
 
-def generate_reasoned_solution(prompt, custom_client=None, num_patches=3):
+def get_api_details():
+    """Get API details from environment variables."""
+    api_url = os.getenv('SELF_API_URL')
+    app_id = os.getenv('SELF_API_ID')
+    auth_token = os.getenv('SELF_API_TOKEN')
+    
+    missing_vars = []
+    if not api_url:
+        missing_vars.append('SELF_API_URL')
+    if not app_id:
+        missing_vars.append('SELF_API_ID')
+    if not auth_token:
+        missing_vars.append('SELF_API_TOKEN')
+    
+    if missing_vars:
+        error_msg = f"Missing required API environment variables: {', '.join(missing_vars)}"
+        print(f"[ERROR] {error_msg}")
+        raise ValueError(error_msg)
+    
+    return api_url, app_id, auth_token
+
+
+def make_api_call(messages, max_tokens, is_final_answer=False):
+    """
+    Combine conversation messages and send a request to the self-hosted LLaMA API.
+    """
+    # Concatenate the conversation history into one prompt
+    conversation = "\n".join([f"{msg['role']}: {msg['content']}" for msg in messages])
+    
+    api_url, app_id, auth_token = get_api_details()
+    start_time = time.time()
+    response = send_llama_request(conversation, api_url=api_url, app_id=app_id, auth_token=auth_token)
+    end_time = time.time()
+    
+    # Try to parse the response as JSON (expecting keys: title, content, next_action)
+    try:
+        step_data = json.loads(response)
+    except (json.JSONDecodeError, TypeError):
+        # If the response isn’t JSON, wrap it in a minimal dict (assume it is the final answer)
+        if is_final_answer:
+            step_data = response
+        else:
+            step_data = {
+                "title": "Response",
+                "content": response,
+                "next_action": "final_answer"
+            }
+    return step_data
+
+def generate_reasoned_solution(prompt, num_patches=3):
     messages = [
-        {"role": "system", "content": """You are an expert software developer and debugger that explains your reasoning step by step. For each step, provide a title that describes what you're doing in that step, along with the content. Decide if you need another step or if you're ready to give the final solution. Respond in JSON format with 'title', 'content', and 'next_action' (either 'continue' or 'final_answer') keys. 
-
-USE AT LEAST 3 REASONING STEPS. Consider:
-1. Understanding the bug and test case
-2. Analyzing root causes
-3. Exploring potential fixes
-4. Validating proposed solutions
-5. Considering edge cases and potential issues
-
-BE THOROUGH IN YOUR ANALYSIS:
-- Consider multiple approaches
-- Evaluate trade-offs
-- Identify potential pitfalls
-- Validate assumptions
-- Consider corner cases
-
-Example response format:
-{
-    "title": "Analyzing Bug Context",
-    "content": "First, let's understand the buggy function and its intended behavior...",
-    "next_action": "continue"
-}"""},
+        {"role": "system", "content": (
+            "You are an expert software developer and debugger that explains your reasoning step by step. "
+            "For each step, provide a title that describes what you're doing along with the content. "
+            "Decide if you need another step or if you're ready to give the final solution. "
+            "Respond in JSON format with 'title', 'content', and 'next_action' (either 'continue' or 'final_answer') keys.\n\n"
+            "USE AT LEAST 3 REASONING STEPS. Consider:\n"
+            "1. Understanding the bug and test case\n"
+            "2. Analyzing root causes\n"
+            "3. Exploring potential fixes\n"
+            "4. Validating proposed solutions\n"
+            "5. Considering edge cases and potential issues\n\n"
+            "BE THOROUGH IN YOUR ANALYSIS:\n"
+            "- Consider multiple approaches\n"
+            "- Evaluate trade-offs\n"
+            "- Identify potential pitfalls\n"
+            "- Validate assumptions\n"
+            "- Consider corner cases\n\n"
+            "Example response format:\n"
+            "{\n"
+            "    \"title\": \"Analyzing Bug Context\",\n"
+            "    \"content\": \"First, let's understand the buggy function and its intended behavior...\",\n"
+            "    \"next_action\": \"continue\"\n"
+            "}"
+        )},
         {"role": "user", "content": prompt},
         {"role": "assistant", "content": "I will analyze this bug step by step, considering all aspects carefully."}
     ]
@@ -78,16 +142,15 @@ Example response format:
     
     while True:
         start_time = time.time()
-        step_data = make_api_call(messages, 500, custom_client=custom_client)
+        step_data = make_api_call(messages, 500, is_final_answer=False)
         end_time = time.time()
         thinking_time = end_time - start_time
         total_thinking_time += thinking_time
         
-        steps.append((f"Step {step_count}: {step_data['title']}", step_data['content'], thinking_time))
-        
+        steps.append((f"Step {step_count}: {step_data.get('title', 'No Title')}", step_data.get('content', ''), thinking_time))
         messages.append({"role": "assistant", "content": json.dumps(step_data)})
         
-        if step_data['next_action'] == 'final_answer' or step_count > 10:
+        if step_data.get('next_action', 'final_answer') == 'final_answer' or step_count >= 10:
             break
         
         step_count += 1
@@ -95,11 +158,16 @@ Example response format:
 
     messages.append({
         "role": "user", 
-        "content": f"Based on your reasoning above, provide a final detailed solution with:\n1. Root Cause Analysis\n2. ONLY {num_patches} distinct repair suggestions, NOTHING MORE, NOTHING LESS\nFormat as 'Root Cause: {{description}}' followed by 'Suggestion 1: {{title}}\n{{details}}' etc."
+        "content": (
+            f"Based on your reasoning above, provide a final detailed solution with:\n"
+            f"1. Root Cause Analysis\n"
+            f"2. ONLY {num_patches} distinct repair suggestions, NOTHING MORE, NOTHING LESS\n"
+            "Format as 'Root Cause: {description}' followed by 'Suggestion 1: {title}\n{details}' etc."
+        )
     })
     
     start_time = time.time()
-    final_solution = make_api_call(messages, 1500, is_final_answer=True, custom_client=custom_client)
+    final_solution = make_api_call(messages, 1500, is_final_answer=True)
     end_time = time.time()
     thinking_time = end_time - start_time
     total_thinking_time += thinking_time

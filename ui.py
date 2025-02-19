@@ -17,18 +17,53 @@ def main():
         """
     )
     
+    # API Keys section
+    st.subheader("API Keys Configuration")
     
-    # API Key input with default from environment
-    default_api_key = os.getenv('GEMINI_API_KEY', '')
-    api_key = st.text_input(
-        "Gemini API Key", 
-        value=default_api_key,
-        type="password",
-        help="Enter your Gemini API key. The default value is loaded from environment variables if available."
-    )
+    # Create columns for API key inputs
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Gemini API Key
+        default_gemini_key = os.getenv('GEMINI_API_KEY', '')
+        gemini_key = st.text_input(
+            "Gemini API Key", 
+            value=default_gemini_key,
+            type="password",
+            help="Enter your Gemini API key for patch validation.",
+            key="gemini_key"
+        )
+        
+        # Together API Key
+        default_together_key = os.getenv('TOGETHER_API_KEY', '')
+        together_key = st.text_input(
+            "Together API Key",
+            value=default_together_key,
+            type="password",
+            help="Enter your Together API key for patch generation.",
+            key="together_key"
+        )
+    
+    with col2:
+        # Groq API Key
+        default_self_url = os.getenv('SELF_API_URL', '')
+        self_api_url = st.text_input("Self-hosted LLaMA API URL", value=default_self_url, help="Enter your self-hosted LLaMA API URL.", key="self_api_url")
+
+        default_self_id = os.getenv('SELF_API_ID', '')
+        self_api_id = st.text_input("Self-hosted LLaMA API ID", value=default_self_id, help="Enter your self-hosted LLaMA API ID.", key="self_api_id")
+
+        default_self_token = os.getenv('SELF_API_TOKEN', '')
+        self_api_token = st.text_input("Self-hosted LLaMA API Token", value=default_self_token, type="password", help="Enter your self-hosted LLaMA API Token.", key="self_api_token")
+
+    # Then update the environment variables accordingly:
+    os.environ['SELF_API_URL'] = self_api_url
+    os.environ['SELF_API_ID'] = self_api_id
+    os.environ['SELF_API_TOKEN'] = self_api_token
+
+    os.environ['GEMINI_API_KEY'] = gemini_key
+    os.environ['TOGETHER_API_KEY'] = together_key
     
     # User inputs
-    # sample_size = st.number_input("Number of solution samples to generate", min_value=1, max_value=5, value=1)
     sample_size = 1
     num_patches = st.number_input("Number of patches to generate", min_value=1, max_value=10, value=3)
     bug_name = st.text_input("Specify the bug ID to generate a solution for (e.g., Math-2)")
@@ -46,8 +81,12 @@ def main():
     patch_file = os.path.join(patches_dir, f"{bug_name}_patch.json")
     validation_file = os.path.join(val_dir, f"{bug_name}_patch_val.json")
 
-    # Button to generate solutions and patches
+
     if st.button("Generate Solution and Patch"):
+        if not together_key:
+            st.error("Please provide a Together API key for patch generation.")
+            return
+            
         if bug_name:
             # Step 1: Generate Solutions with Reasoning
             if not os.path.exists(solution_file) or not os.path.exists(extracted_solution_file):
@@ -78,6 +117,10 @@ def main():
     # Button to validate patches after they are generated
     if os.path.exists(patch_file):
         if st.button("Validate Patches"):
+            if not gemini_key:
+                st.error("Please provide a Gemini API key for patch validation.")
+                return
+                
             if not os.path.exists(validation_file):
                 st.write(f"Validating patches for bug: {bug_name}...")
                 try:
@@ -87,7 +130,7 @@ def main():
                     with open(patch_file, 'r') as f:
                         patch_data = json.load(f)
                     
-                    results = asyncio.run(evaluate_patches(bug_name, patch_file, api_key))
+                    results = asyncio.run(evaluate_patches(bug_name, patch_file, gemini_key))
                     st.success("Patches validated successfully")
                 except Exception as e:
                     st.error(f"Error during patch validation: {e}")
@@ -96,7 +139,7 @@ def main():
             else:
                 st.write(f"Validation file for bug '{bug_name}' already exists. Using existing file.")
 
-    # Display Results
+    # Display Results section remains unchanged
     if bug_name:
         if os.path.exists(solution_file):
             st.write("### Generated Solutions with Reasoning")
@@ -129,6 +172,7 @@ def main():
                     # Display timing information
                     st.info(f"Total thinking time: {solution.get('total_time', 0):.2f} seconds")
                     st.divider()
+
         if os.path.exists(patch_file):
             st.write("### Generated Patches")
             with open(patch_file, "r") as f:
@@ -151,15 +195,7 @@ def main():
                     for i, result in enumerate(validation_results[bug_name], 1):
                         st.write(f"## Patch {i}")
                         st.write(f"**Validation Status**: {result['patch_validation_status']}")
-                        # st.write(f"**Bug Name**: {result['bug_name']}")
-                        # st.write(f"**Timestamp**: {result['timestamp']}")
-                        # st.code(result['generated_patch'], language='java')
-                        
-                        # st.write("### Prompt")
-                        # st.code(result['prompt'], language='text')
-                        # st.write("### Analysis")
-                        # st.markdown(result['analysis'])
-                        st.divider()  # Add a separator between patches
+                        st.divider()
 
 if __name__ == "__main__":
     main()
