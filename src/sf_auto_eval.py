@@ -133,7 +133,7 @@ Output: {response.text}"""
 
     response2 = await client.aio.models.generate_content(
         model='gemini-2.0-flash-exp',
-        contents=types.Part.from_text(output_prompt),
+        contents=types.Part(text=output_prompt),
         config=types.GenerateContentConfig(
             response_mime_type='application/json',
             response_schema=PatchInfo,

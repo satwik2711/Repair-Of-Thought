@@ -9,21 +9,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Use a model suitable for code generation
-model_name = "Qwen/Qwen2.5-Coder-32B-Instruct"
-model_format_prompt = '''You are a Senior Level Programmer who is an expert in fixing bugs. Review the following function and provide a corrected implementation.
+model_name = "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free"
+model_format_prompt = '''You are a Senior Level Programmer with expertise in debugging and code repair. Your task is to review the provided function and produce a corrected, function-level implementation that fully addresses the identified bug.
 
 @@ Context
 {apr_prompt}
 
 @@ Instructions
-1. Analyze the provided root cause and suggestion carefully
-2. Ensure your fix addresses the identified issue
-3. Maintain the original method signature
-4. Make MINIMAL changes to fix the identified issue
-5. Preserve the original code structure and style
-6. Only modify the specific lines needed to address the root cause
-7. Keep all working parts of the original implementation
-8. Follow the provided fix suggestion without over-engineering
+1. Carefully analyze the provided root cause and fix suggestion.
+2. Ensure your implementation completely resolves the identified issue.
+3. Maintain the original method signature.
+4. Preserve the original functionality and coding style as much as possible.
+5. Incorporate all working parts of the original implementation.
+6. Follow the provided fix suggestion without over-engineering or introducing unnecessary changes.
 
 @@ Response Format
 Return ONLY the complete fixed function wrapped in ```java
@@ -31,11 +29,9 @@ Return ONLY the complete fixed function wrapped in ```java
 ``` tags.
 
 @@ Important Notes
-- DO NOT rewrite or restructure the entire function
-- DO NOT add unnecessary optimizations
-- DO NOT change working code that isn't related to the bug
-- DO NOT modify the method signature
-- DO maintain the original variable names and coding style
+- Do not add unnecessary optimizations.
+- Do not modify the method signature.
+- Maintain the original variable names and overall coding style wherever possible.
 
 Your response:'''
 
