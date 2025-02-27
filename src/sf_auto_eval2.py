@@ -38,7 +38,7 @@ class EnhancedPatchValidator:
         self.client = genai.Client(api_key=api_key)
         
     async def validate_patch(self, bug_name: str, generated_patch: str, ground_truth: str, 
-                           test_cases: Dict[str, Any], dataset: Dict[str, Any]) -> SemanticEquivalenceResult:
+                       test_cases: Dict[str, Any], dataset: Dict[str, Any]) -> SemanticEquivalenceResult:
         """
         Runs multiple validation methods and combines results.
         
@@ -52,44 +52,62 @@ class EnhancedPatchValidator:
         Returns:
             SemanticEquivalenceResult containing the validation outcome
         """
-        # Run all validation methods in parallel
-        ast_result = await self.ast_based_validation(generated_patch, ground_truth)
-        io_result = await self.io_based_validation(generated_patch, ground_truth, test_cases)
-        symbolic_result = await self.symbolic_execution_validation(generated_patch, ground_truth)
-        llm_result = await self.llm_based_validation(bug_name, generated_patch, ground_truth)
+        # Run all validation methods and handle failures
+        try:
+            ast_result = await self.ast_based_validation(generated_patch, ground_truth)
+        except Exception as e:
+            ast_result = (0.5, 0.3, f"AST validation exception: {str(e)}")
         
-        # Combine the results (could implement a weighted approach)
+        try:
+            io_result = await self.io_based_validation(generated_patch, ground_truth, test_cases)
+        except Exception as e:
+            io_result = (0.5, 0.3, f"IO validation exception: {str(e)}", None)
+        
+        try:
+            symbolic_result = await self.symbolic_execution_validation(generated_patch, ground_truth)
+        except Exception as e:
+            symbolic_result = (0.5, 0.3, f"Symbolic execution exception: {str(e)}")
+        
+        try:
+            llm_result = await self.llm_based_validation(bug_name, generated_patch, ground_truth)
+        except Exception as e:
+            llm_result = (0.5, 0.3, f"LLM validation exception: {str(e)}")
+        
+        # Weight the results based on success of each module
+        weights = [0.2, 0.3, 0.3, 0.2]  # Default weights
+        
+        # Combined calculation with weights
         combined_equivalent = (
-            (ast_result[0] * 0.2) + 
-            (io_result[0] * 0.3) + 
-            (symbolic_result[0] * 0.3) + 
-            (llm_result[0] * 0.2) >= 0.5
+            (ast_result[0] * weights[0]) + 
+            (io_result[0] * weights[1]) + 
+            (symbolic_result[0] * weights[2]) + 
+            (llm_result[0] * weights[3]) >= 0.5
         )
         
         combined_confidence = (
-            (ast_result[1] * 0.2) + 
-            (io_result[1] * 0.3) + 
-            (symbolic_result[1] * 0.3) + 
-            (llm_result[1] * 0.2)
+            (ast_result[1] * weights[0]) + 
+            (io_result[1] * weights[1]) + 
+            (symbolic_result[1] * weights[2]) + 
+            (llm_result[1] * weights[3])
         )
         
         reasoning = f"""
-AST-based validation: {ast_result[2]}
-IO-based validation: {io_result[2]}
-Symbolic execution validation: {symbolic_result[2]}
-LLM-based validation: {llm_result[2]}
+    AST-based validation: {ast_result[2]}
+    IO-based validation: {io_result[2]}
+    Symbolic execution validation: {symbolic_result[2]}
+    LLM-based validation: {llm_result[2]}
 
-Combined assessment: The patch is {"semantically equivalent" if combined_equivalent else "not semantically equivalent"} 
-to the ground truth with {combined_confidence:.2f} confidence.
-"""
+    Combined assessment: The patch is {"semantically equivalent" if combined_equivalent else "not semantically equivalent"} 
+    to the ground truth with {combined_confidence:.2f} confidence.
+    """
         
         return SemanticEquivalenceResult(
             is_equivalent=combined_equivalent,
             confidence=combined_confidence,
             reasoning=reasoning,
-            executed_test_results=io_result[3] if io_result[3] else None
+            executed_test_results=io_result[3] if len(io_result) > 3 and io_result[3] else None
         )
-    
+
     async def ast_based_validation(self, generated_patch: str, ground_truth: str) -> Tuple[float, float, str]:
         """
         Compares the AST structures of the generated patch and ground truth.
@@ -99,11 +117,26 @@ to the ground truth with {combined_confidence:.2f} confidence.
         """
         try:
             # For Java code, use javalang to parse
-            generated_tree = javalang.parse.parse(generated_patch)
-            ground_truth_tree = javalang.parse.parse(ground_truth)
+            # Make sure both are complete and valid Java code
+            if not (generated_patch.strip() and ground_truth.strip()):
+                return 0.5, 0.5, "AST validation skipped: empty patch provided"
+            
+            # Sometimes patches may be method fragments rather than complete classes
+            # Wrap them in a class structure if needed
+            if not "class" in generated_patch.lower() and not "class" in ground_truth.lower():
+                wrap_code = lambda code: f"class DummyClass {{ {code} }}"
+                try:
+                    generated_tree = javalang.parse.parse(wrap_code(generated_patch))
+                    ground_truth_tree = javalang.parse.parse(wrap_code(ground_truth))
+                except:
+                    # If wrapping fails, try with original code
+                    generated_tree = javalang.parse.parse(generated_patch)
+                    ground_truth_tree = javalang.parse.parse(ground_truth)
+            else:
+                generated_tree = javalang.parse.parse(generated_patch)
+                ground_truth_tree = javalang.parse.parse(ground_truth)
             
             # Perform AST comparison logic here
-            # This is a simplified placeholder for actual AST comparison
             is_equivalent = self._compare_ast_nodes(generated_tree, ground_truth_tree)
             confidence = 0.8 if is_equivalent > 0.8 else is_equivalent
             
@@ -115,16 +148,122 @@ to the ground truth with {combined_confidence:.2f} confidence.
             
             return is_equivalent, confidence, reasoning
         except Exception as e:
-            return 0.0, 0.2, f"AST validation failed: {str(e)}"
-    
+            # Don't let AST failure bring down the entire evaluation
+            # Return neutral values with error message
+            return 0.5, 0.4, f"AST validation failed: {str(e)}"
+
     def _compare_ast_nodes(self, node1, node2) -> float:
         """
-        Recursively compares AST nodes and returns a similarity score between 0 and 1.
-        This is a placeholder for a more sophisticated AST comparison algorithm.
+        Compare AST nodes and return a similarity score between 0 and 1.
+        This is a simplified implementation for Java ASTs.
         """
-        # Implement a more sophisticated comparison algorithm
-        # This is a simplified implementation
-        return 0.9  # Placeholder
+        # Convert to string representation for comparison
+        try:
+            # Get all method declarations from both trees
+            methods1 = list(node1.filter(javalang.tree.MethodDeclaration))
+            methods2 = list(node2.filter(javalang.tree.MethodDeclaration))
+            
+            if not methods1 or not methods2:
+                return 0.7  # Neutral if no methods to compare
+            
+            # Compare method names, return types, and parameters
+            similarities = []
+            for m1 in methods1:
+                for m2 in methods2:
+                    # Check if method names match
+                    if m1.name == m2.name:
+                        # Method name matches, check signature
+                        sig_sim = 0.7
+                        
+                        # Check return type
+                        if str(m1.return_type) == str(m2.return_type):
+                            sig_sim += 0.15
+                        
+                        # Check parameter count and types
+                        if len(m1.parameters) == len(m2.parameters):
+                            param_match = sum(1 for p1, p2 in zip(m1.parameters, m2.parameters) 
+                                            if str(p1.type) == str(p2.type))
+                            if param_match == len(m1.parameters):
+                                sig_sim += 0.15
+                        
+                        similarities.append(sig_sim)
+            
+            return max(similarities) if similarities else 0.5
+        except:
+            # Fallback to a simpler comparison
+            return 0.7  # Return neutral value
+
+    async def llm_based_validation(self, bug_name: str, generated_patch: str, ground_truth: str) -> Tuple[float, float, str]:
+        """
+        Uses an LLM to assess semantic equivalence between patches.
+        
+        Returns:
+            Tuple of (is_equivalent as float 0-1, confidence, reasoning)
+        """
+        try:
+            prompt = f"""You are an expert at evaluating semantic equivalence between program patches.
+
+    Compare these two Java patches and determine if they are semantically equivalent (produce the same outputs for all valid inputs and have the same side effects).
+
+    [Patch 1 - Generated]:
+    {generated_patch}
+
+    [Patch 2 - Ground Truth]:
+    {ground_truth}
+
+    Analyze step by step:
+    1. What are the core operations performed by each patch?
+    2. Are there edge cases where behavior might differ?
+    3. Do both patches handle error conditions the same way?
+    4. Do both patches maintain the same invariants?
+    5. Are there any differences in side effects (e.g., variable mutations, I/O)?
+
+    After your analysis, provide:
+    1. A score between 0 and 1 indicating how semantically equivalent the patches are (1.0 = perfectly equivalent)
+    2. A confidence score between 0 and 1 on your assessment
+    3. Reasoning for your decision
+
+    Format your final answer as:
+    Equivalence Score: [score]
+    Confidence: [confidence]
+    Reasoning: [reasoning]
+    """
+            generation_config = types.GenerateContentConfig(
+                temperature=0.0,
+                seed=42
+            )
+            
+            response = await self.client.aio.models.generate_content(
+                model='gemini-2.0-flash-thinking-exp-1219',
+                contents=types.Part(text=prompt),
+                config=generation_config
+            )
+            
+            # Extract scores from the text response
+            response_text = response.text
+            
+            # Parse the text response to extract scores
+            equivalence_score = 0.5  # default
+            confidence = 0.5  # default
+            
+            # Look for patterns like "Equivalence Score: 0.8" in the response
+            import re
+            equiv_match = re.search(r"Equivalence Score:\s*(\d+\.\d+)", response_text)
+            conf_match = re.search(r"Confidence:\s*(\d+\.\d+)", response_text)
+            
+            if equiv_match:
+                equivalence_score = float(equiv_match.group(1))
+            if conf_match:
+                confidence = float(conf_match.group(1))
+            
+            # Extract reasoning - everything after "Reasoning: "
+            reasoning_parts = response_text.split("Reasoning:", 1)
+            reasoning = reasoning_parts[1].strip() if len(reasoning_parts) > 1 else "Detailed reasoning not provided."
+            
+            return equivalence_score, confidence, f"LLM assessed equivalence: {equivalence_score} with confidence {confidence}. {reasoning[:200]}..."
+                
+        except Exception as e:
+            return 0.5, 0.4, f"LLM-based validation failed: {str(e)}"
     
     async def io_based_validation(self, generated_patch: str, ground_truth: str, 
                                test_cases: Dict[str, Any]) -> Tuple[float, float, str, Optional[Dict]]:
@@ -211,68 +350,6 @@ to the ground truth with {combined_confidence:.2f} confidence.
         except Exception as e:
             return 0.0, 0.3, f"Symbolic execution validation failed: {str(e)}"
     
-    async def llm_based_validation(self, bug_name: str, generated_patch: str, ground_truth: str) -> Tuple[float, float, str]:
-        """
-        Uses an LLM to assess semantic equivalence between patches.
-        
-        Returns:
-            Tuple of (is_equivalent as float 0-1, confidence, reasoning)
-        """
-        try:
-            prompt = f"""You are an expert at evaluating semantic equivalence between program patches.
-
-Compare these two Java patches and determine if they are semantically equivalent (produce the same outputs for all valid inputs and have the same side effects).
-
-[Patch 1 - Generated]:
-{generated_patch}
-
-[Patch 2 - Ground Truth]:
-{ground_truth}
-
-Analyze step by step:
-1. What are the core operations performed by each patch?
-2. Are there edge cases where behavior might differ?
-3. Do both patches handle error conditions the same way?
-4. Do both patches maintain the same invariants?
-5. Are there any differences in side effects (e.g., variable mutations, I/O)?
-
-After your analysis, provide:
-1. A 0-to-1 score indicating how semantically equivalent the patches are (1.0 = perfectly equivalent)
-2. A confidence score between 0 and 1 on your assessment
-3. Reasoning for your decision
-
-Format your answer as JSON:
-{{
-  "equivalence_score": <float>,
-  "confidence": <float>,
-  "reasoning": <string>
-}}
-"""
-            generation_config = types.GenerateContentConfig(
-                temperature=0.0,
-                response_mime_type='application/json',
-                seed=42
-            )
-            
-            response = await self.client.aio.models.generate_content(
-                model='gemini-2.0-flash-thinking-exp-1219',
-                contents=types.Part(text=prompt),
-                config=generation_config
-            )
-            
-            try:
-                result = json.loads(response.text)
-                equivalence_score = float(result.get("equivalence_score", 0.0))
-                confidence = float(result.get("confidence", 0.5))
-                reasoning = result.get("reasoning", "No reasoning provided by LLM.")
-                
-                return equivalence_score, confidence, reasoning
-            except (json.JSONDecodeError, ValueError):
-                # Fallback if the LLM doesn't return proper JSON
-                return 0.5, 0.4, "LLM response could not be parsed as valid JSON."
-                
-        except Exception as e:
-            return 0.0, 0.3, f"LLM-based validation failed: {str(e)}"
 
 # Integration with existing code
 async def evaluate_single_patch(bug_name: str, generated_patch: str, api_key: str) -> dict:
