@@ -124,7 +124,7 @@ def main():
             if not os.path.exists(validation_file):
                 st.write(f"Validating patches for bug: {bug_name}...")
                 try:
-                    from src.sf_auto_eval import evaluate_patches
+                    from src.sf_auto_eval2 import evaluate_patches
                     import asyncio
                     
                     with open(patch_file, 'r') as f:
