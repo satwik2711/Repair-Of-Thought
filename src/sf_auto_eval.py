@@ -11,12 +11,7 @@ load_dotenv()
 
 class PatchInfo(BaseModel):
   patch_type: str
-  
-# api_keys = [os.getenv(f'GEMINI_API_KEY')]  # Assumes GEMINI_API_KEY_1 through GEMINI_API_KEY_10
-# clients = [genai.Client(api_key=key) for key in api_keys]
-# current_client_index = 0
 
-# Replace with a single client that uses the provided API key
 client = None
 
 async def get_next_client(api_key):

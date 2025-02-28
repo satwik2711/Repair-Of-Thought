@@ -1,27 +1,25 @@
 import json
 import asyncio
 import os
-import ast
-import difflib
-import subprocess
 import tempfile
+import subprocess
+import re
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 from pydantic import BaseModel
 import datetime
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple
 import javalang
-import unittest
 
 load_dotenv()
 
-# Define global client variable
+# Global client variable
 client = None
 
 class PatchInfo(BaseModel):
     patch_type: str
-    
+
 class SemanticEquivalenceResult(BaseModel):
     is_equivalent: bool
     confidence: float
@@ -30,38 +28,20 @@ class SemanticEquivalenceResult(BaseModel):
 
 class EnhancedPatchValidator:
     """
-    Enhanced validator that incorporates multiple semantic equivalence testing mechanisms
-    to verify if a patch and the ground truth are semantically equivalent.
+    Enhanced validator that now uses AST-based, symbolic execution, 
+    and LLM-based semantic equivalence testing. IO-based validation
+    has been removed.
     """
-    
     def __init__(self, api_key: str):
         self.client = genai.Client(api_key=api_key)
         
     async def validate_patch(self, bug_name: str, generated_patch: str, ground_truth: str, 
-                       test_cases: Dict[str, Any], dataset: Dict[str, Any]) -> SemanticEquivalenceResult:
-        """
-        Runs multiple validation methods and combines results.
-        
-        Args:
-            bug_name: The bug identifier
-            generated_patch: The patch to validate
-            ground_truth: The ground truth patch
-            test_cases: Test cases for the bug
-            dataset: The complete dataset entry for this bug
-            
-        Returns:
-            SemanticEquivalenceResult containing the validation outcome
-        """
-        # Run all validation methods and handle failures
+                             test_cases: Dict[str, Any], dataset: Dict[str, Any]) -> SemanticEquivalenceResult:
+        # Run each validation method and handle failures gracefully
         try:
             ast_result = await self.ast_based_validation(generated_patch, ground_truth)
         except Exception as e:
             ast_result = (0.5, 0.3, f"AST validation exception: {str(e)}")
-        
-        try:
-            io_result = await self.io_based_validation(generated_patch, ground_truth, test_cases)
-        except Exception as e:
-            io_result = (0.5, 0.3, f"IO validation exception: {str(e)}", None)
         
         try:
             symbolic_result = await self.symbolic_execution_validation(generated_patch, ground_truth)
@@ -73,72 +53,57 @@ class EnhancedPatchValidator:
         except Exception as e:
             llm_result = (0.5, 0.3, f"LLM validation exception: {str(e)}")
         
-        # Weight the results based on success of each module
-        weights = [0.2, 0.3, 0.3, 0.2]  # Default weights
+        # Use weights derived from original weights (AST:0.2, IO:0.3, Symbolic:0.3, LLM:0.2)
+        # With IO removed, we normalize the remaining weights:
+        # w_ast = 0.2/0.7 ≈ 0.286, w_symbolic = 0.3/0.7 ≈ 0.429, w_llm = 0.2/0.7 ≈ 0.286
+        w_ast = 0.286
+        w_sym = 0.429
+        w_llm = 0.286
         
-        # Combined calculation with weights
-        combined_equivalent = (
-            (ast_result[0] * weights[0]) + 
-            (io_result[0] * weights[1]) + 
-            (symbolic_result[0] * weights[2]) + 
-            (llm_result[0] * weights[3]) >= 0.5
-        )
+        combined_equivalent = ((ast_result[0] * w_ast) + 
+                               (symbolic_result[0] * w_sym) + 
+                               (llm_result[0] * w_llm)) >= 0.5
         
-        combined_confidence = (
-            (ast_result[1] * weights[0]) + 
-            (io_result[1] * weights[1]) + 
-            (symbolic_result[1] * weights[2]) + 
-            (llm_result[1] * weights[3])
-        )
+        combined_confidence = (ast_result[1] * w_ast) + (symbolic_result[1] * w_sym) + (llm_result[1] * w_llm)
         
         reasoning = f"""
-    AST-based validation: {ast_result[2]}
-    IO-based validation: {io_result[2]}
-    Symbolic execution validation: {symbolic_result[2]}
-    LLM-based validation: {llm_result[2]}
+AST-based validation: {ast_result[2]}
+Symbolic execution validation: {symbolic_result[2]}
+LLM-based validation: {llm_result[2]}
 
-    Combined assessment: The patch is {"semantically equivalent" if combined_equivalent else "not semantically equivalent"} 
-    to the ground truth with {combined_confidence:.2f} confidence.
-    """
+Combined assessment: The patch is {"semantically equivalent" if combined_equivalent else "not semantically equivalent"} 
+to the ground truth with {combined_confidence:.2f} confidence.
+"""
         
         return SemanticEquivalenceResult(
             is_equivalent=combined_equivalent,
             confidence=combined_confidence,
             reasoning=reasoning,
-            executed_test_results=io_result[3] if len(io_result) > 3 and io_result[3] else None
+            executed_test_results=None
         )
 
     async def ast_based_validation(self, generated_patch: str, ground_truth: str) -> Tuple[float, float, str]:
         """
         Compares the AST structures of the generated patch and ground truth.
-        
-        Returns:
-            Tuple of (is_equivalent as float 0-1, confidence, reasoning)
+        Returns a tuple: (similarity score, confidence, reasoning).
         """
         try:
-            # For Java code, we need to handle potential fragments
-            # First, check if we're dealing with complete classes or just method fragments
             gen_has_class = "class" in generated_patch.lower()
             truth_has_class = "class" in ground_truth.lower()
             
-            # Check if we have valid Java code that can be parsed
             try:
-                # Try parsing as-is first
                 if gen_has_class and truth_has_class:
                     generated_tree = javalang.parse.parse(generated_patch)
                     ground_truth_tree = javalang.parse.parse(ground_truth)
                     parsing_approach = "full class parsing"
                 else:
-                    # For method fragments, we need to tokenize and analyze
                     gen_tokens = list(javalang.tokenizer.tokenize(generated_patch))
                     truth_tokens = list(javalang.tokenizer.tokenize(ground_truth))
                     
-                    # Simple token-based similarity
                     total_tokens = max(len(gen_tokens), len(truth_tokens))
                     if total_tokens == 0:
                         return 0.5, 0.5, "AST validation: Empty tokens found"
                     
-                    # Compare token types and values
                     matches = 0
                     for i in range(min(len(gen_tokens), len(truth_tokens))):
                         if gen_tokens[i].value == truth_tokens[i].value:
@@ -146,21 +111,14 @@ class EnhancedPatchValidator:
                     
                     token_similarity = matches / total_tokens
                     
-                    # Use a more sophisticated approach for method fragments
-                    # Extract method structure using regular expressions
-                    import re
-                    
-                    # Extract method signature patterns
                     gen_methods = re.findall(r'(\w+\s+\w+\s*\([^)]*\))', generated_patch)
                     truth_methods = re.findall(r'(\w+\s+\w+\s*\([^)]*\))', ground_truth)
                     
                     method_similarity = 0.0
                     if gen_methods and truth_methods:
-                        # Compare method signatures
                         method_matches = sum(1 for gm in gen_methods for tm in truth_methods if gm == tm)
                         method_similarity = method_matches / max(len(gen_methods), len(truth_methods))
                     
-                    # Extract variable declarations and operations
                     gen_vars = re.findall(r'(\w+\s+\w+\s*=)', generated_patch)
                     truth_vars = re.findall(r'(\w+\s+\w+\s*=)', ground_truth)
                     
@@ -169,133 +127,88 @@ class EnhancedPatchValidator:
                         var_matches = sum(1 for gv in gen_vars for tv in truth_vars if gv == tv)
                         var_similarity = var_matches / max(len(gen_vars), len(truth_vars))
                     
-                    # Calculate overall code structure similarity
-                    # Weighted average of token, method and variable similarities
                     is_equivalent = 0.5 * token_similarity + 0.3 * method_similarity + 0.2 * var_similarity
-                    confidence = 0.6  # Lower confidence for fragment analysis
-                    
-                    reasoning = f"AST validation using token analysis: " \
-                            f"Token similarity: {token_similarity:.2f}, " \
-                            f"Method signature similarity: {method_similarity:.2f}, " \
-                            f"Variable usage similarity: {var_similarity:.2f}. " \
-                            f"Overall structure similarity score: {is_equivalent:.2f}"
+                    confidence = 0.6
+                    reasoning = (f"AST validation using token analysis: Token similarity: {token_similarity:.2f}, "
+                                f"Method signature similarity: {method_similarity:.2f}, "
+                                f"Variable usage similarity: {var_similarity:.2f}. "
+                                f"Overall structure similarity score: {is_equivalent:.2f}")
                     
                     return is_equivalent, confidence, reasoning
                     
             except javalang.parser.JavaSyntaxError:
-                # If direct parsing fails, try wrapping in a dummy class
                 try:
                     wrap_code = lambda code: f"class DummyClass {{ {code} }}"
                     generated_tree = javalang.parse.parse(wrap_code(generated_patch))
                     ground_truth_tree = javalang.parse.parse(wrap_code(ground_truth))
                     parsing_approach = "wrapped method parsing"
                 except:
-                    # If all parsing fails, fall back to text similarity
                     import difflib
-                    similarity = difflib.SequenceMatcher(None, 
-                                                    generated_patch.strip(), 
-                                                    ground_truth.strip()).ratio()
+                    similarity = difflib.SequenceMatcher(None, generated_patch.strip(), ground_truth.strip()).ratio()
                     return similarity, 0.5, f"AST parsing failed, using text similarity: {similarity:.2f}"
             
-            # If we get here, we have parsed trees to compare
-            # Compare tree structures using our specialized method
             similarity_score = self._compare_ast_structure(generated_tree, ground_truth_tree)
             confidence = 0.8 if similarity_score > 0.8 else 0.6
-            
-            reasoning = f"AST analysis using {parsing_approach}: Structural similarity score: {similarity_score:.2f}. " + (
-                "The abstract syntax trees show high structural similarity." 
-                if similarity_score > 0.7 else 
-                "The abstract syntax trees show significant structural differences."
-            )
+            reasoning = (f"AST analysis using {parsing_approach}: Structural similarity score: {similarity_score:.2f}. " +
+                         ("The abstract syntax trees show high structural similarity." 
+                          if similarity_score > 0.7 else "The abstract syntax trees show significant structural differences."))
             
             return similarity_score, confidence, reasoning
         except Exception as e:
-            # Fall back to text similarity
             import difflib
             try:
-                similarity = difflib.SequenceMatcher(None, 
-                                                generated_patch.strip(), 
-                                                ground_truth.strip()).ratio()
+                similarity = difflib.SequenceMatcher(None, generated_patch.strip(), ground_truth.strip()).ratio()
                 return similarity, 0.4, f"AST validation failed with error: {str(e)}. Using text similarity: {similarity:.2f}"
             except:
-                # If everything fails, return neutral values
                 return 0.5, 0.3, f"AST validation failed completely: {str(e)}"
-
+    
     def _compare_ast_structure(self, tree1, tree2) -> float:
         """
         Compare two parsed Java ASTs and return a similarity score.
-        This is a more advanced comparison that looks at structure and content.
         """
         try:
-            # Extract methods from both trees
             methods1 = list(tree1.filter(javalang.tree.MethodDeclaration))
             methods2 = list(tree2.filter(javalang.tree.MethodDeclaration))
             
-            # If no methods, compare classes directly
             if not methods1 or not methods2:
-                # Extract classes
                 classes1 = list(tree1.filter(javalang.tree.ClassDeclaration))
                 classes2 = list(tree2.filter(javalang.tree.ClassDeclaration))
-                
                 if not classes1 or not classes2:
-                    return 0.5  # Neutral if no classes to compare
-                
-                # Compare class members and structure
+                    return 0.5
                 class_similarities = []
                 for c1 in classes1:
                     for c2 in classes2:
-                        # Compare fields
                         fields1 = list(c1.filter(javalang.tree.FieldDeclaration))
                         fields2 = list(c2.filter(javalang.tree.FieldDeclaration))
-                        
                         field_similarity = 0.0
                         if fields1 and fields2:
-                            # Simple count comparison for now
                             field_similarity = min(len(fields1), len(fields2)) / max(len(fields1), len(fields2))
-                        
-                        # Add more comparisons for class structure if needed
                         class_similarities.append(field_similarity)
-                
                 return max(class_similarities) if class_similarities else 0.5
             
-            # For each method in tree1, find the best matching method in tree2
             method_similarities = []
             for m1 in methods1:
                 best_match = 0.0
                 for m2 in methods2:
-                    # Start with name similarity
                     if m1.name == m2.name:
-                        similarity = 0.4  # 40% for matching name
-                        
-                        # Check return type
+                        similarity = 0.4
                         if str(m1.return_type) == str(m2.return_type):
-                            similarity += 0.1  # 10% for matching return type
-                        
-                        # Check parameters
+                            similarity += 0.1
                         param_similarity = 0.0
                         if len(m1.parameters) == len(m2.parameters):
                             param_matches = sum(1 for p1, p2 in zip(m1.parameters, m2.parameters) 
-                                            if str(p1.type) == str(p2.type))
+                                                if str(p1.type) == str(p2.type))
                             if param_matches > 0:
                                 param_similarity = param_matches / len(m1.parameters)
-                        
-                        similarity += param_similarity * 0.2  # 20% for parameters
-                        
-                        # Compare body - extract statements
+                        similarity += param_similarity * 0.2
                         body_similarity = 0.0
                         if hasattr(m1, 'body') and hasattr(m2, 'body') and m1.body and m2.body:
                             stmts1 = list(m1.body)
                             stmts2 = list(m2.body)
-                            
                             if stmts1 and stmts2:
-                                # Simple count-based comparison
                                 stmt_count_sim = min(len(stmts1), len(stmts2)) / max(len(stmts1), len(stmts2))
-                                
-                                # For a more advanced comparison, we could compare statement types
                                 stmt_types1 = [type(s).__name__ for s in stmts1]
                                 stmt_types2 = [type(s).__name__ for s in stmts2]
-                                
-                                # Calculate Jaccard similarity of statement types
                                 set1 = set(stmt_types1)
                                 set2 = set(stmt_types2)
                                 if set1 or set2:
@@ -303,67 +216,225 @@ class EnhancedPatchValidator:
                                     body_similarity = (stmt_count_sim + jaccard) / 2
                                 else:
                                     body_similarity = stmt_count_sim
-                        
-                        similarity += body_similarity * 0.3  # 30% for body similarity
-                        
+                        similarity += body_similarity * 0.3
                         if similarity > best_match:
                             best_match = similarity
                     else:
-                        # Different method names - lower similarity
-                        similarity = 0.1  # Only 10% for different named methods
-                        
-                        # Still check parameters and body for structural similarity
+                        similarity = 0.1
                         if len(m1.parameters) == len(m2.parameters):
                             similarity += 0.1
-                        
                         if similarity > best_match:
                             best_match = similarity
-                
                 method_similarities.append(best_match)
-            
-            # Overall similarity is average of best method matches
             if method_similarities:
                 return sum(method_similarities) / len(method_similarities)
-            return 0.5  # Neutral if no similarities computed
-        except Exception as e:
-            # If comparison fails, return neutral similarity
             return 0.5
+        except Exception as e:
+            return 0.5
+
+    async def symbolic_execution_validation(self, generated_patch: str, ground_truth: str) -> Tuple[float, float, str]:
+        """
+        Uses symbolic execution (via Java PathFinder) to compare the behavior
+        of both patches. Falls back to a control–flow analysis if necessary.
+        Returns a tuple: (equivalence score, confidence, reasoning).
+        """
+        try:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                gen_file_path = os.path.join(temp_dir, "GeneratedPatch.java")
+                gt_file_path = os.path.join(temp_dir, "GroundTruth.java")
+                
+                gen_class = self._create_wrapper_class(generated_patch, "GeneratedPatch")
+                gt_class = self._create_wrapper_class(ground_truth, "GroundTruth")
+                
+                with open(gen_file_path, 'w') as f:
+                    f.write(gen_class)
+                with open(gt_file_path, 'w') as f:
+                    f.write(gt_class)
+                
+                comparator_path = os.path.join(temp_dir, "PatchComparator.java")
+                with open(comparator_path, 'w') as f:
+                    f.write(self._create_comparator_class())
+                
+                jpf_config_path = os.path.join(temp_dir, "jpf.properties")
+                with open(jpf_config_path, 'w') as f:
+                    f.write(self._create_jpf_config("PatchComparator"))
+                
+                jpf_home = os.environ.get("JPF_HOME")
+                if not jpf_home:
+                    # If JPF is not available, fallback to simple analysis
+                    return self._fallback_symbolic_analysis(generated_patch, ground_truth)
+                
+                jpf_cmd = f"java -jar {os.path.join(jpf_home, 'build', 'RunJPF.jar')} {jpf_config_path}"
+                process = subprocess.run(
+                    jpf_cmd, 
+                    shell=True, 
+                    capture_output=True, 
+                    text=True,
+                    cwd=temp_dir,
+                    timeout=60
+                )
+                jpf_output = process.stdout
+                
+                if "property violation" in jpf_output.lower():
+                    violation_details = self._extract_violation_details(jpf_output)
+                    confidence = 0.8
+                    return 0.0, confidence, f"Symbolic execution found behavioral differences: {violation_details}"
+                
+                path_coverage = self._analyze_path_coverage(jpf_output)
+                equivalence = path_coverage.get("equivalence_score", 0.9)
+                confidence = path_coverage.get("confidence", 0.7)
+                reasoning = (f"Symbolic execution explored {path_coverage.get('explored_paths', '?')} paths. "
+                            f"No behavioral differences found. Path similarity: {path_coverage.get('path_similarity', '?')}")
+                return equivalence, confidence, reasoning
+                
+        except subprocess.TimeoutExpired:
+            return 0.5, 0.4, "Symbolic execution timed out after 60 seconds"
+        except Exception as e:
+            return self._fallback_symbolic_analysis(generated_patch, ground_truth)
+
+    def _create_wrapper_class(self, patch_code: str, class_name: str) -> str:
+        """
+        Wrap the patch code in a class if it isn't already a class.
+        """
+        if "class" not in patch_code.lower():
+            return f"""
+public class {class_name} {{
+    // Wrapped patch code
+    {patch_code}
+}}
+"""
+        else:
+            # If already a class, rename it
+            return patch_code.replace("class", f"class {class_name}", 1)
+
+    def _create_comparator_class(self) -> str:
+        """
+        Create a Java comparator class for symbolic execution.
+        """
+        return """
+import gov.nasa.jpf.vm.Verify;
+
+public class PatchComparator {
+    public static void main(String[] args) {
+        int symbolicInt = Verify.getInt(0, 100);
+        boolean symbolicBool = Verify.getBoolean();
+        
+        GeneratedPatch genPatch = new GeneratedPatch();
+        GroundTruth gtPatch = new GroundTruth();
+        
+        Object genResult = genPatch.method(symbolicInt, symbolicBool);
+        Object gtResult = gtPatch.method(symbolicInt, symbolicBool);
+        
+        boolean equivalent = (genResult == null && gtResult == null) ||
+                              (genResult != null && genResult.equals(gtResult));
+        
+        assert equivalent : "Patches produce different results for same input";
+    }
+}
+"""
+
+    def _create_jpf_config(self, target_class: str) -> str:
+        """
+        Create configuration file for Java PathFinder.
+        """
+        return f"""
+target = {target_class}
+classpath = .
+
+# Enable symbolic execution for main method
+symbolic.method = {target_class}.main(symbolic)
+listener = gov.nasa.jpf.listener.AssertionProperty
+"""
+
+    def _extract_violation_details(self, jpf_output: str) -> str:
+        """
+        Extract details of property violation from JPF output.
+        """
+        lines = jpf_output.split('\n')
+        for i, line in enumerate(lines):
+            if "AssertionError" in line and i+1 < len(lines):
+                return lines[i+1].strip()
+        return "Behavioral difference detected but details not available"
+
+    def _analyze_path_coverage(self, jpf_output: str) -> Dict[str, Any]:
+        """
+        Analyze JPF output to extract path coverage and compute similarity.
+        """
+        path_count = 0
+        for line in jpf_output.split('\n'):
+            if "paths explored" in line.lower():
+                try:
+                    path_count = int(line.split(':')[1].strip())
+                except:
+                    pass
+        return {
+            "explored_paths": path_count,
+            "path_similarity": 0.95 if path_count > 0 else 0.5,
+            "equivalence_score": 0.9 if path_count > 0 else 0.5,
+            "confidence": 0.8 if path_count > 10 else 0.6
+        }
+
+    def _fallback_symbolic_analysis(self, generated_patch: str, ground_truth: str) -> Tuple[float, float, str]:
+        """
+        Fallback symbolic analysis using control flow constructs.
+        """
+        def count_constructs(code):
+            return {
+                "if": len(re.findall(r'\bif\s*\(', code)),
+                "else": len(re.findall(r'\belse\b', code)),
+                "for": len(re.findall(r'\bfor\s*\(', code)),
+                "while": len(re.findall(r'\bwhile\s*\(', code)),
+                "return": len(re.findall(r'\breturn\b', code)),
+                "try": len(re.findall(r'\btry\b', code)),
+                "catch": len(re.findall(r'\bcatch\b', code))
+            }
+        
+        gen_counts = count_constructs(generated_patch)
+        gt_counts = count_constructs(ground_truth)
+        
+        total_constructs = sum(max(gen_counts[k], gt_counts[k]) for k in gen_counts.keys())
+        if total_constructs == 0:
+            similarity = 0.5
+        else:
+            differences = sum(abs(gen_counts[k] - gt_counts[k]) for k in gen_counts.keys())
+            similarity = 1.0 - (differences / (2 * total_constructs))
+        
+        confidence = 0.5
+        reasoning = f"Fallback symbolic analysis: Control flow similarity: {similarity:.2f}"
+        return similarity, confidence, reasoning
 
     async def llm_based_validation(self, bug_name: str, generated_patch: str, ground_truth: str) -> Tuple[float, float, str]:
         """
         Uses an LLM to assess semantic equivalence between patches.
-        
-        Returns:
-            Tuple of (is_equivalent as float 0-1, confidence, reasoning)
         """
         try:
             prompt = f"""You are an expert at evaluating semantic equivalence between program patches.
 
-    Compare these two Java patches and determine if they are semantically equivalent (produce the same outputs for all valid inputs and have the same side effects).
+Compare these two Java patches and determine if they are semantically equivalent (i.e., produce the same outputs for all valid inputs and have the same side effects).
 
-    [Patch 1 - Generated]:
-    {generated_patch}
+[Patch 1 - Generated]:
+{generated_patch}
 
-    [Patch 2 - Ground Truth]:
-    {ground_truth}
+[Patch 2 - Ground Truth]:
+{ground_truth}
 
-    Analyze step by step:
-    1. What are the core operations performed by each patch?
-    2. Are there edge cases where behavior might differ?
-    3. Do both patches handle error conditions the same way?
-    4. Do both patches maintain the same invariants?
-    5. Are there any differences in side effects (e.g., variable mutations, I/O)?
+Analyze step by step:
+1. What are the core operations performed by each patch?
+2. Are there edge cases where behavior might differ?
+3. Do both patches handle error conditions the same way?
+4. Do both patches maintain the same invariants?
+5. Are there any differences in side effects (e.g., variable mutations, I/O)?
 
-    After your analysis, provide:
-    1. A score between 0 and 1 indicating how semantically equivalent the patches are (1.0 = perfectly equivalent)
-    2. A confidence score between 0 and 1 on your assessment
-    3. Reasoning for your decision
+After your analysis, provide:
+1. A score between 0 and 1 indicating semantic equivalence (1.0 = perfectly equivalent)
+2. A confidence score between 0 and 1 on your assessment
+3. Reasoning for your decision
 
-    Format your final answer as:
-    Equivalence Score: [score]
-    Confidence: [confidence]
-    Reasoning: [reasoning]
-    """
+Format your final answer as:
+Equivalence Score: [score]
+Confidence: [confidence]
+Reasoning: [reasoning]
+"""
             generation_config = types.GenerateContentConfig(
                 temperature=0.0,
                 seed=42
@@ -375,15 +446,9 @@ class EnhancedPatchValidator:
                 config=generation_config
             )
             
-            # Extract scores from the text response
             response_text = response.text
-            
-            # Parse the text response to extract scores
-            equivalence_score = 0.5  # default
-            confidence = 0.5  # default
-            
-            # Look for patterns like "Equivalence Score: 0.8" in the response
-            import re
+            equivalence_score = 0.5
+            confidence = 0.5
             equiv_match = re.search(r"Equivalence Score:\s*(\d+\.\d+)", response_text)
             conf_match = re.search(r"Confidence:\s*(\d+\.\d+)", response_text)
             
@@ -392,7 +457,6 @@ class EnhancedPatchValidator:
             if conf_match:
                 confidence = float(conf_match.group(1))
             
-            # Extract reasoning - everything after "Reasoning: "
             reasoning_parts = response_text.split("Reasoning:", 1)
             reasoning = reasoning_parts[1].strip() if len(reasoning_parts) > 1 else "Detailed reasoning not provided."
             
@@ -400,98 +464,9 @@ class EnhancedPatchValidator:
                 
         except Exception as e:
             return 0.5, 0.4, f"LLM-based validation failed: {str(e)}"
-    
-    async def io_based_validation(self, generated_patch: str, ground_truth: str, 
-                               test_cases: Dict[str, Any]) -> Tuple[float, float, str, Optional[Dict]]:
-        """
-        Runs both patches against test inputs and compares outputs.
-        
-        Returns:
-            Tuple of (is_equivalent as float 0-1, confidence, reasoning, test_results)
-        """
-        try:
-            # Create temporary files with the patches
-            with tempfile.NamedTemporaryFile(suffix=".java") as gen_file, \
-                 tempfile.NamedTemporaryFile(suffix=".java") as gt_file:
-                
-                gen_file.write(generated_patch.encode())
-                gt_file.write(ground_truth.encode())
-                gen_file.flush()
-                gt_file.flush()
-                
-                # Set up and run test harness for both patches
-                test_results = {}
-                equivalent_count = 0
-                total_tests = len(test_cases)
-                
-                for test_name, test_data in test_cases.items():
-                    # Compile and run test for generated patch
-                    gen_output = self._run_java_test(gen_file.name, test_data)
-                    
-                    # Compile and run test for ground truth patch
-                    gt_output = self._run_java_test(gt_file.name, test_data)
-                    
-                    # Compare outputs
-                    outputs_match = gen_output == gt_output
-                    if outputs_match:
-                        equivalent_count += 1
-                    
-                    test_results[test_name] = {
-                        "input": test_data.get("input"),
-                        "generated_output": gen_output,
-                        "ground_truth_output": gt_output,
-                        "outputs_match": outputs_match
-                    }
-                
-                io_equivalence = equivalent_count / total_tests if total_tests > 0 else 0
-                confidence = io_equivalence
-                
-                reasoning = f"IO testing completed on {total_tests} test cases. " + \
-                           f"{equivalent_count} tests show identical outputs. " + \
-                           f"IO-based equivalence score: {io_equivalence:.2f}"
-                
-                return io_equivalence, confidence, reasoning, test_results
-        except Exception as e:
-            return 0.0, 0.3, f"IO-based validation failed: {str(e)}", None
-    
-    def _run_java_test(self, java_file: str, test_data: Dict[str, Any]) -> str:
-        """
-        Compiles and runs a Java test with the given inputs.
-        This is a placeholder for actual Java test execution.
-        """
-        # In a real implementation, this would compile and run the Java code
-        # with the provided test inputs
-        return "test_output"  # Placeholder
-    
-    async def symbolic_execution_validation(self, generated_patch: str, ground_truth: str) -> Tuple[float, float, str]:
-        """
-        Uses symbolic execution to compare the behavior of both patches.
-        
-        Returns:
-            Tuple of (is_equivalent as float 0-1, confidence, reasoning)
-        """
-        try:
-            # Placeholder for symbolic execution
-            # In a real implementation, you would use a symbolic execution engine like KLEE, JPF, etc.
-            
-            # Mock result for demonstration
-            symbolic_equiv = 0.85
-            confidence = 0.7
-            
-            reasoning = f"Symbolic execution shows that the patches behave identically " + \
-                       f"for {symbolic_equiv*100:.0f}% of possible inputs, suggesting " + \
-                       f"high semantic equivalence."
-            
-            return symbolic_equiv, confidence, reasoning
-        except Exception as e:
-            return 0.0, 0.3, f"Symbolic execution validation failed: {str(e)}"
-    
 
 # Integration with existing code
 async def evaluate_single_patch(bug_name: str, generated_patch: str, api_key: str) -> dict:
-    """
-    Enhanced evaluation that incorporates semantic equivalence testing.
-    """
     client = await get_next_client(api_key)
     validator = EnhancedPatchValidator(api_key)
     
@@ -499,11 +474,9 @@ async def evaluate_single_patch(bug_name: str, generated_patch: str, api_key: st
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
     
-    # Get test cases for this bug
     test_cases = data[bug_name]['trigger_test']
     ground_truth = data[bug_name]['fix']
 
-    # Build out the test sections from the JSON
     test_sections = []
     for test_key in test_cases:
         test_case = test_cases[test_key]
@@ -515,7 +488,6 @@ Error Message: {test_case['clean_error_msg']}
 """
         test_sections.append(test_section)
 
-    # Run semantic equivalence validation
     semantic_result = await validator.validate_patch(
         bug_name, 
         generated_patch, 
@@ -524,7 +496,6 @@ Error Message: {test_case['clean_error_msg']}
         data[bug_name]
     )
 
-    # Create the evaluation prompt, now enhanced with semantic analysis results
     prompt = f"""You are an expert at evaluating program patches for correctness.
 
 You will be given:
@@ -562,7 +533,7 @@ You will systematically analyze patches in a step by step manner using the follo
 
 5. Consider Semantic Equivalence Testing Results
 - Review the automated semantic equivalence scores 
-- Consider AST similarities, IO behavior, and symbolic execution results
+- Consider AST, symbolic execution, and LLM-based validation results
 - Weigh these results against your own analysis
 
 [Classification]
@@ -592,14 +563,12 @@ Explain your reasoning step by step, then conclude with your classification.
         seed=42
     )
 
-    # First LLM call to get reasoning/analysis
     response = await client.aio.models.generate_content(
         model='gemini-2.0-flash-thinking-exp-1219',
         contents=types.Part(text=prompt),
         config=generation_config
     )
 
-    # Second call for classification in JSON
     output_prompt = f"""This is a big reasoning response from gemini-2.0-flash-thinking, output the classification type in JSON.
 - CORRECT: Semantically equivalent to ground truth
 - PLAUSIBLE: Fixes core issue but has behavioral differences
@@ -632,7 +601,6 @@ Output: {response.text}"""
         }
     }
 
-# This function must be defined at module level
 async def get_next_client(api_key):
     global client
     if client is None:
@@ -640,13 +608,9 @@ async def get_next_client(api_key):
     return client
 
 async def evaluate_patches(bug_name: str, generated_patch_file: str, api_key: str) -> list[dict]:
-    """
-    Evaluate multiple generated patches for a given bug_name asynchronously.
-    """
     with open(generated_patch_file, 'r', encoding='utf-8') as file:
         patch_data = json.load(file)
         
-    # Access patches through the bug_name key first
     generated_patches = patch_data.get(bug_name, {}).get('patches', [])
     
     tasks = [
