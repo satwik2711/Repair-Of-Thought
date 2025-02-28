@@ -1,0 +1,31 @@
+{
+  "bug_name": "Cli-25",
+  "processing_start_time": "2025-02-28T23:48:22.039071",
+  "solution_file": "outputs/sol\\Cli-25.json",
+  "extracted_solution_file": "outputs/sol\\Cli-25_extracted.json",
+  "patch_file": "outputs/patches\\Cli-25_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-02-28T23:48:22.039081",
+    "end_time": "2025-02-28T23:48:31.095265"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-02-28T23:48:36.095447",
+    "end_time": "2025-02-28T23:50:43.991230"
+  },
+  "evaluation": {
+    "status": null,
+    "attempt_count": 3,
+    "error": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource has been exhausted (e.g. check quota).', 'status': 'RESOURCE_EXHAUSTED'}}",
+    "start_time": "2025-02-28T23:50:48.991674",
+    "end_time": "2025-02-28T23:52:47.461080",
+    "results": null
+  },
+  "processing_end_time": "2025-02-28T23:52:47.461104",
+  "processing_duration_seconds": 265.422033
+}

@@ -284,13 +284,10 @@ def generate_dataset_results(patch_num, bug_names, chunk_size=1, delay_between_b
                     }
                     results_summary["bugs"].append(error_result)
         
-        # Save intermediate results after each chunk
+        # Save intermediate results after each chunk, but only as a JSON file
         intermediate_file = os.path.join(run_dir, f"intermediate_results_chunk_{chunk_idx}.json")
         with open(intermediate_file, "w", encoding="utf-8") as f:
             json.dump(results_summary, f, indent=2)
-        
-        # Generate and save summary report
-        generate_summary_report(results_summary, os.path.join(run_dir, f"summary_report_chunk_{chunk_idx}.html"))
         
         # Delay before next chunk (unless it's the last chunk)
         if chunk_idx < len(bug_chunks):
@@ -303,8 +300,8 @@ def generate_dataset_results(patch_num, bug_names, chunk_size=1, delay_between_b
     with open(final_file, "w", encoding="utf-8") as f:
         json.dump(results_summary, f, indent=2)
     
-    # Generate final summary report
-    final_report = os.path.join(run_dir, "final_summary_report.html")
+    # Generate only one summary report at the end of the run
+    final_report = os.path.join(run_dir, "summary_report.html")
     generate_summary_report(results_summary, final_report)
     
     print(f"\n[INFO] Run {run_id} completed!")
@@ -447,12 +444,12 @@ if __name__ == '__main__':
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
     
-    subset_data = list(data.keys())[:20]  # Reduced to 20 bugs for testing
+    subset_data = list(data.keys())[30:40]  # Reduced to 20 bugs for testing
     
     final_results = generate_dataset_results(
         patch_num=3,
         bug_names=subset_data,
-        chunk_size=1,       # Process 1 bug at a time to avoid rate limiting
+        chunk_size=2,       # Process 1 bug at a time to avoid rate limiting
         delay_between_bugs=5  # 5 second delay between bugs
     )
     

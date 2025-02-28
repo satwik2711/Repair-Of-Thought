@@ -1,0 +1,9 @@
+{
+  "Cli-25": {
+    "The root cause of the bug is the incorrect handling of the padding in the `renderWrappedText` function. When the function encounters a long description, it adds padding to the beginning of the text to align it with the next line tab stop. However, this padding is not correctly removed when the text is wrapped, resulting in the incorrect indentation of the wrapped lines.": [
+      "Remove Padding Before Wrapping\nOne possible fix is to remove the padding from the text before wrapping it. This can be done by modifying the line `text = padding + text.substring(pos).trim();` to `text = text.substring(pos).trim();`. This will ensure that the padding is not included in the wrapped text.",
+      "Adjust Padding After Wrapping\nAnother possible fix is to adjust the padding after wrapping the text. This can be done by modifying the line `sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);` to `sb.append(rtrim(text.substring(0, pos))).append(padding).append(defaultNewLine);`. However, this approach requires careful consideration of the padding length to avoid incorrect indentation.",
+      "Use a Different Approach to Padding\nA third possible fix is to use a different approach to padding altogether. Instead of adding padding to the text before wrapping it, we could add the padding to the `StringBuffer` directly. This can be done by modifying the line `sb.append(rtrim(text.substring(0, pos))).append(defaultNewLine);` to `sb.append(padding).append(rtrim(text.substring(0, pos))).append(defaultNewLine);`. However, this approach may require additional logic to handle the padding correctly for each line."
+    ]
+  }
+}

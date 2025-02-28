@@ -1,0 +1,9 @@
+{
+  "Cli-19": {
+    "The root cause of the bug is that the `processOptionToken` method is not correctly handling unrecognized options when `stopAtNonOption` is set to `false`. In this case, the method should throw an `UnrecognizedOptionException` when it encounters an unrecognized option. However, the current implementation only checks if the option exists and if `stopAtNonOption` is set, but it does not throw an exception when an unrecognized option is encountered.": [
+      "Throw UnrecognizedOptionException when option does not exist\nThe `processOptionToken` method should be modified to throw an `UnrecognizedOptionException` when the option does not exist and `stopAtNonOption` is set to `false`. This can be achieved by adding an else clause to the if statement that checks if the option exists.",
+      "Add explicit check for unrecognized options\nThe `processOptionToken` method should be modified to explicitly check if the option is recognized before attempting to process it. If the option is not recognized, an `UnrecognizedOptionException` should be thrown.",
+      "Modify condition to throw exception when stopAtNonOption is false\nThe `processOptionToken` method should be modified to throw an `UnrecognizedOptionException` when `stopAtNonOption` is set to `false` and the option does not exist. This can be achieved by modifying the condition in the if statement to check if `stopAtNonOption` is false and the option does not exist.\",\n    \"next_action\": \"final_answer\"\n}"
+    ]
+  }
+}
