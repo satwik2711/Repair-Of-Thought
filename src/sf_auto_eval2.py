@@ -53,12 +53,9 @@ class EnhancedPatchValidator:
         except Exception as e:
             llm_result = (0.5, 0.3, f"LLM validation exception: {str(e)}")
         
-        # Use weights derived from original weights (AST:0.2, IO:0.3, Symbolic:0.3, LLM:0.2)
-        # With IO removed, we normalize the remaining weights:
-        # w_ast = 0.2/0.7 ≈ 0.286, w_symbolic = 0.3/0.7 ≈ 0.429, w_llm = 0.2/0.7 ≈ 0.286
-        w_ast = 0.286
-        w_sym = 0.429
-        w_llm = 0.286
+        w_ast = 0.333
+        w_sym = 0.333
+        w_llm = 0.333
         
         combined_equivalent = ((ast_result[0] * w_ast) + 
                                (symbolic_result[0] * w_sym) + 
@@ -234,63 +231,12 @@ to the ground truth with {combined_confidence:.2f} confidence.
 
     async def symbolic_execution_validation(self, generated_patch: str, ground_truth: str) -> Tuple[float, float, str]:
         """
-        Uses symbolic execution (via Java PathFinder) to compare the behavior
-        of both patches. Falls back to a control–flow analysis if necessary.
+        Uses a fallback symbolic analysis based on control flow constructs
+        to compare the behavior of both patches.
         Returns a tuple: (equivalence score, confidence, reasoning).
         """
-        try:
-            with tempfile.TemporaryDirectory() as temp_dir:
-                gen_file_path = os.path.join(temp_dir, "GeneratedPatch.java")
-                gt_file_path = os.path.join(temp_dir, "GroundTruth.java")
-                
-                gen_class = self._create_wrapper_class(generated_patch, "GeneratedPatch")
-                gt_class = self._create_wrapper_class(ground_truth, "GroundTruth")
-                
-                with open(gen_file_path, 'w') as f:
-                    f.write(gen_class)
-                with open(gt_file_path, 'w') as f:
-                    f.write(gt_class)
-                
-                comparator_path = os.path.join(temp_dir, "PatchComparator.java")
-                with open(comparator_path, 'w') as f:
-                    f.write(self._create_comparator_class())
-                
-                jpf_config_path = os.path.join(temp_dir, "jpf.properties")
-                with open(jpf_config_path, 'w') as f:
-                    f.write(self._create_jpf_config("PatchComparator"))
-                
-                jpf_home = os.environ.get("JPF_HOME")
-                if not jpf_home:
-                    # If JPF is not available, fallback to simple analysis
-                    return self._fallback_symbolic_analysis(generated_patch, ground_truth)
-                
-                jpf_cmd = f"java -jar {os.path.join(jpf_home, 'build', 'RunJPF.jar')} {jpf_config_path}"
-                process = subprocess.run(
-                    jpf_cmd, 
-                    shell=True, 
-                    capture_output=True, 
-                    text=True,
-                    cwd=temp_dir,
-                    timeout=60
-                )
-                jpf_output = process.stdout
-                
-                if "property violation" in jpf_output.lower():
-                    violation_details = self._extract_violation_details(jpf_output)
-                    confidence = 0.8
-                    return 0.0, confidence, f"Symbolic execution found behavioral differences: {violation_details}"
-                
-                path_coverage = self._analyze_path_coverage(jpf_output)
-                equivalence = path_coverage.get("equivalence_score", 0.9)
-                confidence = path_coverage.get("confidence", 0.7)
-                reasoning = (f"Symbolic execution explored {path_coverage.get('explored_paths', '?')} paths. "
-                            f"No behavioral differences found. Path similarity: {path_coverage.get('path_similarity', '?')}")
-                return equivalence, confidence, reasoning
-                
-        except subprocess.TimeoutExpired:
-            return 0.5, 0.4, "Symbolic execution timed out after 60 seconds"
-        except Exception as e:
-            return self._fallback_symbolic_analysis(generated_patch, ground_truth)
+        return self._fallback_symbolic_analysis(generated_patch, ground_truth)
+
 
     def _create_wrapper_class(self, patch_code: str, class_name: str) -> str:
         """
@@ -298,11 +244,11 @@ to the ground truth with {combined_confidence:.2f} confidence.
         """
         if "class" not in patch_code.lower():
             return f"""
-public class {class_name} {{
-    // Wrapped patch code
-    {patch_code}
-}}
-"""
+                public class {class_name} {{
+                    // Wrapped patch code
+                    {patch_code}
+                }}
+        """
         else:
             # If already a class, rename it
             return patch_code.replace("class", f"class {class_name}", 1)
