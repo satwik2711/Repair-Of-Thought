@@ -116,82 +116,218 @@ class EnhancedPatchValidator:
             Tuple of (is_equivalent as float 0-1, confidence, reasoning)
         """
         try:
-            # For Java code, use javalang to parse
-            # Make sure both are complete and valid Java code
-            if not (generated_patch.strip() and ground_truth.strip()):
-                return 0.5, 0.5, "AST validation skipped: empty patch provided"
+            # For Java code, we need to handle potential fragments
+            # First, check if we're dealing with complete classes or just method fragments
+            gen_has_class = "class" in generated_patch.lower()
+            truth_has_class = "class" in ground_truth.lower()
             
-            # Sometimes patches may be method fragments rather than complete classes
-            # Wrap them in a class structure if needed
-            if not "class" in generated_patch.lower() and not "class" in ground_truth.lower():
-                wrap_code = lambda code: f"class DummyClass {{ {code} }}"
-                try:
-                    generated_tree = javalang.parse.parse(wrap_code(generated_patch))
-                    ground_truth_tree = javalang.parse.parse(wrap_code(ground_truth))
-                except:
-                    # If wrapping fails, try with original code
+            # Check if we have valid Java code that can be parsed
+            try:
+                # Try parsing as-is first
+                if gen_has_class and truth_has_class:
                     generated_tree = javalang.parse.parse(generated_patch)
                     ground_truth_tree = javalang.parse.parse(ground_truth)
-            else:
-                generated_tree = javalang.parse.parse(generated_patch)
-                ground_truth_tree = javalang.parse.parse(ground_truth)
+                    parsing_approach = "full class parsing"
+                else:
+                    # For method fragments, we need to tokenize and analyze
+                    gen_tokens = list(javalang.tokenizer.tokenize(generated_patch))
+                    truth_tokens = list(javalang.tokenizer.tokenize(ground_truth))
+                    
+                    # Simple token-based similarity
+                    total_tokens = max(len(gen_tokens), len(truth_tokens))
+                    if total_tokens == 0:
+                        return 0.5, 0.5, "AST validation: Empty tokens found"
+                    
+                    # Compare token types and values
+                    matches = 0
+                    for i in range(min(len(gen_tokens), len(truth_tokens))):
+                        if gen_tokens[i].value == truth_tokens[i].value:
+                            matches += 1
+                    
+                    token_similarity = matches / total_tokens
+                    
+                    # Use a more sophisticated approach for method fragments
+                    # Extract method structure using regular expressions
+                    import re
+                    
+                    # Extract method signature patterns
+                    gen_methods = re.findall(r'(\w+\s+\w+\s*\([^)]*\))', generated_patch)
+                    truth_methods = re.findall(r'(\w+\s+\w+\s*\([^)]*\))', ground_truth)
+                    
+                    method_similarity = 0.0
+                    if gen_methods and truth_methods:
+                        # Compare method signatures
+                        method_matches = sum(1 for gm in gen_methods for tm in truth_methods if gm == tm)
+                        method_similarity = method_matches / max(len(gen_methods), len(truth_methods))
+                    
+                    # Extract variable declarations and operations
+                    gen_vars = re.findall(r'(\w+\s+\w+\s*=)', generated_patch)
+                    truth_vars = re.findall(r'(\w+\s+\w+\s*=)', ground_truth)
+                    
+                    var_similarity = 0.0
+                    if gen_vars and truth_vars:
+                        var_matches = sum(1 for gv in gen_vars for tv in truth_vars if gv == tv)
+                        var_similarity = var_matches / max(len(gen_vars), len(truth_vars))
+                    
+                    # Calculate overall code structure similarity
+                    # Weighted average of token, method and variable similarities
+                    is_equivalent = 0.5 * token_similarity + 0.3 * method_similarity + 0.2 * var_similarity
+                    confidence = 0.6  # Lower confidence for fragment analysis
+                    
+                    reasoning = f"AST validation using token analysis: " \
+                            f"Token similarity: {token_similarity:.2f}, " \
+                            f"Method signature similarity: {method_similarity:.2f}, " \
+                            f"Variable usage similarity: {var_similarity:.2f}. " \
+                            f"Overall structure similarity score: {is_equivalent:.2f}"
+                    
+                    return is_equivalent, confidence, reasoning
+                    
+            except javalang.parser.JavaSyntaxError:
+                # If direct parsing fails, try wrapping in a dummy class
+                try:
+                    wrap_code = lambda code: f"class DummyClass {{ {code} }}"
+                    generated_tree = javalang.parse.parse(wrap_code(generated_patch))
+                    ground_truth_tree = javalang.parse.parse(wrap_code(ground_truth))
+                    parsing_approach = "wrapped method parsing"
+                except:
+                    # If all parsing fails, fall back to text similarity
+                    import difflib
+                    similarity = difflib.SequenceMatcher(None, 
+                                                    generated_patch.strip(), 
+                                                    ground_truth.strip()).ratio()
+                    return similarity, 0.5, f"AST parsing failed, using text similarity: {similarity:.2f}"
             
-            # Perform AST comparison logic here
-            is_equivalent = self._compare_ast_nodes(generated_tree, ground_truth_tree)
-            confidence = 0.8 if is_equivalent > 0.8 else is_equivalent
+            # If we get here, we have parsed trees to compare
+            # Compare tree structures using our specialized method
+            similarity_score = self._compare_ast_structure(generated_tree, ground_truth_tree)
+            confidence = 0.8 if similarity_score > 0.8 else 0.6
             
-            reasoning = f"AST similarity score: {is_equivalent:.2f}. " + (
+            reasoning = f"AST analysis using {parsing_approach}: Structural similarity score: {similarity_score:.2f}. " + (
                 "The abstract syntax trees show high structural similarity." 
-                if is_equivalent > 0.8 else 
+                if similarity_score > 0.7 else 
                 "The abstract syntax trees show significant structural differences."
             )
             
-            return is_equivalent, confidence, reasoning
+            return similarity_score, confidence, reasoning
         except Exception as e:
-            # Don't let AST failure bring down the entire evaluation
-            # Return neutral values with error message
-            return 0.5, 0.4, f"AST validation failed: {str(e)}"
+            # Fall back to text similarity
+            import difflib
+            try:
+                similarity = difflib.SequenceMatcher(None, 
+                                                generated_patch.strip(), 
+                                                ground_truth.strip()).ratio()
+                return similarity, 0.4, f"AST validation failed with error: {str(e)}. Using text similarity: {similarity:.2f}"
+            except:
+                # If everything fails, return neutral values
+                return 0.5, 0.3, f"AST validation failed completely: {str(e)}"
 
-    def _compare_ast_nodes(self, node1, node2) -> float:
+    def _compare_ast_structure(self, tree1, tree2) -> float:
         """
-        Compare AST nodes and return a similarity score between 0 and 1.
-        This is a simplified implementation for Java ASTs.
+        Compare two parsed Java ASTs and return a similarity score.
+        This is a more advanced comparison that looks at structure and content.
         """
-        # Convert to string representation for comparison
         try:
-            # Get all method declarations from both trees
-            methods1 = list(node1.filter(javalang.tree.MethodDeclaration))
-            methods2 = list(node2.filter(javalang.tree.MethodDeclaration))
+            # Extract methods from both trees
+            methods1 = list(tree1.filter(javalang.tree.MethodDeclaration))
+            methods2 = list(tree2.filter(javalang.tree.MethodDeclaration))
             
+            # If no methods, compare classes directly
             if not methods1 or not methods2:
-                return 0.7  # Neutral if no methods to compare
+                # Extract classes
+                classes1 = list(tree1.filter(javalang.tree.ClassDeclaration))
+                classes2 = list(tree2.filter(javalang.tree.ClassDeclaration))
+                
+                if not classes1 or not classes2:
+                    return 0.5  # Neutral if no classes to compare
+                
+                # Compare class members and structure
+                class_similarities = []
+                for c1 in classes1:
+                    for c2 in classes2:
+                        # Compare fields
+                        fields1 = list(c1.filter(javalang.tree.FieldDeclaration))
+                        fields2 = list(c2.filter(javalang.tree.FieldDeclaration))
+                        
+                        field_similarity = 0.0
+                        if fields1 and fields2:
+                            # Simple count comparison for now
+                            field_similarity = min(len(fields1), len(fields2)) / max(len(fields1), len(fields2))
+                        
+                        # Add more comparisons for class structure if needed
+                        class_similarities.append(field_similarity)
+                
+                return max(class_similarities) if class_similarities else 0.5
             
-            # Compare method names, return types, and parameters
-            similarities = []
+            # For each method in tree1, find the best matching method in tree2
+            method_similarities = []
             for m1 in methods1:
+                best_match = 0.0
                 for m2 in methods2:
-                    # Check if method names match
+                    # Start with name similarity
                     if m1.name == m2.name:
-                        # Method name matches, check signature
-                        sig_sim = 0.7
+                        similarity = 0.4  # 40% for matching name
                         
                         # Check return type
                         if str(m1.return_type) == str(m2.return_type):
-                            sig_sim += 0.15
+                            similarity += 0.1  # 10% for matching return type
                         
-                        # Check parameter count and types
+                        # Check parameters
+                        param_similarity = 0.0
                         if len(m1.parameters) == len(m2.parameters):
-                            param_match = sum(1 for p1, p2 in zip(m1.parameters, m2.parameters) 
+                            param_matches = sum(1 for p1, p2 in zip(m1.parameters, m2.parameters) 
                                             if str(p1.type) == str(p2.type))
-                            if param_match == len(m1.parameters):
-                                sig_sim += 0.15
+                            if param_matches > 0:
+                                param_similarity = param_matches / len(m1.parameters)
                         
-                        similarities.append(sig_sim)
+                        similarity += param_similarity * 0.2  # 20% for parameters
+                        
+                        # Compare body - extract statements
+                        body_similarity = 0.0
+                        if hasattr(m1, 'body') and hasattr(m2, 'body') and m1.body and m2.body:
+                            stmts1 = list(m1.body)
+                            stmts2 = list(m2.body)
+                            
+                            if stmts1 and stmts2:
+                                # Simple count-based comparison
+                                stmt_count_sim = min(len(stmts1), len(stmts2)) / max(len(stmts1), len(stmts2))
+                                
+                                # For a more advanced comparison, we could compare statement types
+                                stmt_types1 = [type(s).__name__ for s in stmts1]
+                                stmt_types2 = [type(s).__name__ for s in stmts2]
+                                
+                                # Calculate Jaccard similarity of statement types
+                                set1 = set(stmt_types1)
+                                set2 = set(stmt_types2)
+                                if set1 or set2:
+                                    jaccard = len(set1.intersection(set2)) / len(set1.union(set2))
+                                    body_similarity = (stmt_count_sim + jaccard) / 2
+                                else:
+                                    body_similarity = stmt_count_sim
+                        
+                        similarity += body_similarity * 0.3  # 30% for body similarity
+                        
+                        if similarity > best_match:
+                            best_match = similarity
+                    else:
+                        # Different method names - lower similarity
+                        similarity = 0.1  # Only 10% for different named methods
+                        
+                        # Still check parameters and body for structural similarity
+                        if len(m1.parameters) == len(m2.parameters):
+                            similarity += 0.1
+                        
+                        if similarity > best_match:
+                            best_match = similarity
+                
+                method_similarities.append(best_match)
             
-            return max(similarities) if similarities else 0.5
-        except:
-            # Fallback to a simpler comparison
-            return 0.7  # Return neutral value
+            # Overall similarity is average of best method matches
+            if method_similarities:
+                return sum(method_similarities) / len(method_similarities)
+            return 0.5  # Neutral if no similarities computed
+        except Exception as e:
+            # If comparison fails, return neutral similarity
+            return 0.5
 
     async def llm_based_validation(self, bug_name: str, generated_patch: str, ground_truth: str) -> Tuple[float, float, str]:
         """
