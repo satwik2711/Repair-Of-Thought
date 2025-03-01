@@ -1,0 +1,31 @@
+{
+  "bug_name": "Closure-131",
+  "processing_start_time": "2025-03-01T12:00:50.003718",
+  "solution_file": "outputs/sol\\Closure-131.json",
+  "extracted_solution_file": "outputs/sol\\Closure-131_extracted.json",
+  "patch_file": "outputs/patches\\Closure-131_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-01T12:00:50.003737",
+    "end_time": "2025-03-01T12:01:00.522652"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-01T12:01:05.523589",
+    "end_time": "2025-03-01T12:02:39.224620"
+  },
+  "evaluation": {
+    "status": null,
+    "attempt_count": 3,
+    "error": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource has been exhausted (e.g. check quota).', 'status': 'RESOURCE_EXHAUSTED'}}",
+    "start_time": "2025-03-01T12:02:44.225461",
+    "end_time": "2025-03-01T12:04:25.581068",
+    "results": null
+  },
+  "processing_end_time": "2025-03-01T12:04:25.581085",
+  "processing_duration_seconds": 215.577367
+}

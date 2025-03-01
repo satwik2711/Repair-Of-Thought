@@ -1,0 +1,9 @@
+{
+  "JacksonCore-11": {
+    "The root cause of the bug appears to be related to the fact that the `_hashArea` array is not being properly updated or resized when the sharing status is updated. Specifically, the line `_hashArea = Arrays.copyOf(_hashArea, _hashArea.length);` creates a new copy of the array, but does not change its size. This can lead to an `ArrayIndexOutOfBoundsException` when trying to access an index that is out of bounds.": [
+      "Update Array Size\nUpdate the size of the `_hashArea` array when creating a new copy, to ensure that it can accommodate the required indices. This can be done by changing the line `_hashArea = Arrays.copyOf(_hashArea, _hashArea.length);` to `_hashArea = Arrays.copyOf(_hashArea, _hashArea.length * 2);` to double the size of the array. This will ensure that the array has enough capacity to hold the required data, preventing the `ArrayIndexOutOfBoundsException`.",
+      "Check Array Bounds\nAdd a check to ensure that the index being accessed is within the bounds of the `_hashArea` array. This can be done by adding a conditional statement before accessing the array, such as `if (offset < _hashArea.length) { _hashArea[offset] = q[0]; }`. This will prevent the `ArrayIndexOutOfBoundsException` by ensuring that the index is valid before attempting to access the array.",
+      "Rehash Before Accessing\nRehash the data structure before accessing the `_hashArea` array, to ensure that the indices are valid. This can be done by moving the `rehash()` call to before the line `_hashArea[offset] = q[0];`. This will ensure that the data structure is in a consistent state before attempting to access the array, preventing the `ArrayIndexOutOfBoundsException`."
+    ]
+  }
+}

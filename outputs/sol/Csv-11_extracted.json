@@ -1,0 +1,9 @@
+{
+  "Csv-11": {
+    "The bug is caused by the fact that the `header` variable is null when the `trim()` method is called on it. This happens when the `headerRecord` array contains a null value, which is not checked before calling `trim()` on it. The `headerRecord` array is populated from the `formatHeader` array or from the first line of the file, depending on the format settings. In the trigger test, the `formatHeader` array is not set, and the first line of the file contains a null string, which is not handled properly.": [
+      "Check for Null Before Calling Trim\nWe can add a null check before calling `trim()` on the `header` variable. This will prevent the NullPointerException from occurring. Here's the modified code:\n```java\nif (header != null) {\n    final boolean emptyHeader = header.trim().isEmpty();\n} else {\n    final boolean emptyHeader = true; // or some other default value\n}\n```\nThis solution is simple and straightforward, and it fixes the bug without introducing any additional complexity.",
+      "Use Optional to Handle Null Values\nWe can use the `Optional` class to handle null values in the `headerRecord` array. Here's the modified code:\n```java\nOptional<String> headerOptional = Optional.ofNullable(headerRecord[i]);\nfinal boolean emptyHeader = headerOptional.map(String::trim).map(String::isEmpty).orElse(true);\n```\nThis solution uses the `Optional` class to handle null values in a more elegant way, but it may be less familiar to some developers.",
+      "Filter Out Null Values from Header Record\nWe can filter out null values from the `headerRecord` array before processing it. Here's the modified code:\n```java\nheaderRecord = Arrays.stream(headerRecord).filter(Objects::nonNull).toArray(String[]::new);\n```\nThis solution filters out null values from the `headerRecord` array, which prevents the NullPointerException from occurring. However, it may have a performance impact if the array is large."
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "JacksonCore-3": {
+    "The root cause of the bug is that the `_inputPtr` variable is not being adjusted to account for the offset when calculating the token location. The `_inputPtr` variable is initialized to the start of the input buffer, but it should be adjusted to account for the offset when calculating the token location.": [
+      "Adjust `_inputPtr` Variable\nOne possible solution is to adjust the `_inputPtr` variable to account for the offset when calculating the token location. We can do this by subtracting the offset from the `_inputPtr` variable when calculating the token location. This can be done by adding the following line of code to the constructor: `_inputPtr -= start;`. This will ensure that the `_inputPtr` variable is correctly adjusted to account for the offset, and the token location will be calculated correctly.",
+      "Use Offset-Aware Calculation\nAnother possible solution is to use an offset-aware calculation when calculating the token location. We can do this by adding the offset to the `_inputPtr` variable when calculating the token location. This can be done by replacing the line of code that calculates the token location with the following code: `loc = new JsonLocation(_inputPtr - start, -1L, 1, 1);`. This will ensure that the token location is calculated correctly, taking into account the offset.",
+      "Initialize `_inputPtr` with Offset\nA third possible solution is to initialize the `_inputPtr` variable with the offset already taken into account. We can do this by changing the line of code that initializes the `_inputPtr` variable to the following: `_inputPtr = start;`. This will ensure that the `_inputPtr` variable is correctly initialized to account for the offset, and the token location will be calculated correctly."
+    ]
+  }
+}

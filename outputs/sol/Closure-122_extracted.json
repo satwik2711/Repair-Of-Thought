@@ -1,0 +1,9 @@
+{
+  "Closure-122": {
+    "The issue lies in the fact that the function `handleBlockComment` only checks for '/* @' or '\\n * @' at the beginning of the comment value. However, in the trigger test, the '@type {number}' is not at the beginning of the comment value, but rather on a new line. This means that the function is not correctly identifying the JSDoc comment.": [
+      "Check for '@' symbol anywhere in the comment value\nInstead of only checking for '/* @' or '\\n * @' at the beginning of the comment value, we can check for the '@' symbol anywhere in the comment value. This can be done by using the `indexOf` method without specifying a starting index. However, this approach may also match non-JSDoc comments that contain the '@' symbol.",
+      "Use a regular expression to match JSDoc comments\nWe can use a regular expression to match JSDoc comments. This would allow us to correctly identify JSDoc comments even when the '@' symbol is not at the beginning of the comment value. The regular expression can be designed to match the specific pattern of JSDoc comments, reducing the likelihood of false positives.",
+      "Check for '@' symbol on a new line\nWe can check if the comment value contains '\\n * @' anywhere, not just at the beginning. This would allow us to correctly identify JSDoc comments even when the '@' symbol is on a new line. This approach is simple and effective, and it does not require significant changes to the existing code. The modified code would be:\n```java\nprivate void handleBlockComment(Comment comment) {\n  if (comment.getValue().indexOf(\"/* @\") != -1 || comment.getValue().contains(\"\\n * @\")) {\n    errorReporter.warning(\n        SUSPICIOUS_COMMENT_WARNING,\n        sourceName,\n        comment.getLineno(), \"\", 0);\n  }\n}\n```"
+    ]
+  }
+}

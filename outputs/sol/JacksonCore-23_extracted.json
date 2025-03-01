@@ -1,0 +1,10 @@
+{
+  "JacksonCore-23": {
+    "The `createInstance` method does not check if the subclass overrides the necessary methods before creating a new instance. This allows an invalid subclass to be used, leading to unexpected behavior.": [
+      "Check for Override using Reflection\nCheck if the subclass overrides the necessary methods using Java reflection. This can be done by getting the methods of the subclass and checking if they override the methods of the superclass. The `createInstance` method can be modified to use reflection to check for the override, and throw an `IllegalStateException` if the subclass does not override the necessary methods.",
+      "Use a Template Method\nModify the `createInstance` method to use a template method that checks if the subclass overrides the necessary methods. This can be done by adding an abstract method to the superclass that must be implemented by the subclass. The `createInstance` method can then call this abstract method to check if the subclass has overridden the necessary methods.",
+      "Check for Interface Implementation\nCheck if the subclass implements a certain interface that defines the necessary methods. This can be done by checking if the subclass implements the interface using the `instanceof` operator. The `createInstance` method can be modified to check if the subclass implements the interface, and throw an `IllegalStateException` if it does not.\n\nHere is the modified code for",
+      "```java\npublic DefaultPrettyPrinter createInstance() {\n    if (!(this instanceof MyPrettyPrinterInterface)) {\n        throw new IllegalStateException(\"does not override\");\n    }\n    return new DefaultPrettyPrinter(this);\n}\n```\n\nNote: `MyPrettyPrinterInterface` is an interface that defines the necessary methods that must be implemented by the subclass."
+    ]
+  }
+}

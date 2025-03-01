@@ -1,0 +1,9 @@
+{
+  "JacksonCore-15": {
+    "The root cause of the bug is that the `nextToken()` function does not correctly handle the case when multiple matches are not allowed. Specifically, when the filter matches a name, it does not check if the current token is already included in the output. As a result, multiple tokens with the same name are included in the output, leading to incorrect results.": [
+      "Add a Flag to Track Included Tokens\nOne possible fix is to add a flag to track whether a token has already been included in the output. We can add a boolean field `included` to the `TokenFilterContext` class to track this. When a token is included in the output, we set the `included` flag to true. Before including a token in the output, we check the `included` flag. If it is true, we skip the token.",
+      "Modify the Filter to Exclude Duplicate Tokens\nAnother possible fix is to modify the `NameMatchFilter` to exclude duplicate tokens. We can add a `HashSet` to the `NameMatchFilter` class to keep track of the names that have already been included in the output. When a token is matched, we check if the name is already in the `HashSet`. If it is, we exclude the token.",
+      "Use a More Efficient Data Structure\nA third possible fix is to use a more efficient data structure to keep track of the included tokens. We can use a `HashMap` to map the token names to their corresponding tokens. When a token is included in the output, we add it to the `HashMap`. Before including a token in the output, we check if it is already in the `HashMap`. If it is, we skip the token."
+    ]
+  }
+}

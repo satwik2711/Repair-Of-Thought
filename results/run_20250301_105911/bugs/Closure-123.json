@@ -1,0 +1,31 @@
+{
+  "bug_name": "Closure-123",
+  "processing_start_time": "2025-03-01T11:40:25.379587",
+  "solution_file": "outputs/sol\\Closure-123.json",
+  "extracted_solution_file": "outputs/sol\\Closure-123_extracted.json",
+  "patch_file": "outputs/patches\\Closure-123_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-01T11:40:25.379608",
+    "end_time": "2025-03-01T11:40:36.277984"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-01T11:40:41.278250",
+    "end_time": "2025-03-01T11:41:01.080886"
+  },
+  "evaluation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-01T11:41:06.081410",
+    "end_time": "2025-03-01T11:41:06.192400",
+    "results": []
+  },
+  "processing_end_time": "2025-03-01T11:41:06.192415",
+  "processing_duration_seconds": 40.812828
+}

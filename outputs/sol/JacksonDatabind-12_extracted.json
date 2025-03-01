@@ -1,0 +1,9 @@
+{
+  "JacksonDatabind-12": {
+    "The root cause of the bug is that the `isCachable()` function is not correctly determining whether an instance can be cached or not. The function is only checking if the `_valueTypeDeserializer` and `_ignorableProperties` are null, but it's not considering the case where a custom deserializer is used. In this case, the custom deserializer is modifying the value of `bean.map2.get(\"a\")` to 100, which is causing the assertion to fail.": [
+      "Check for Custom Deserializers\nThe `isCachable()` function should check if a custom deserializer is used. If a custom deserializer is used, the instance should not be cached. This can be done by adding a check for the presence of a custom deserializer in the `isCachable()` function. Here is the modified code:\n```java\npublic boolean isCachable() {\n    return (_valueTypeDeserializer == null)\n            && (_ignorableProperties == null)\n            && !hasCustomDeserializer();\n}\n\nprivate boolean hasCustomDeserializer() {\n    // implementation to check for custom deserializers\n}\n```",
+      "Modify the Custom Deserializer\nThe custom deserializer should not modify the value of `bean.map2.get(\"a\")` to 100. Instead, it should return the original value. This can be done by modifying the custom deserializer to return the original value instead of modifying it.",
+      "Use a Different Caching Strategy\nInstead of caching the instance, we can use a different caching strategy that takes into account the use of custom deserializers. For example, we can cache the deserialized values instead of the instance itself. This would require significant changes to the caching mechanism, but it would ensure that the caching works correctly even when custom deserializers are used."
+    ]
+  }
+}

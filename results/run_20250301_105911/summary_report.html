@@ -1,0 +1,523 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Repair-of-Thought Results Summary</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h1, h2 { color: #333; }
+                .summary { background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+                .metrics { display: flex; flex-wrap: wrap; gap: 20px; }
+                .metric { background-color: white; border: 1px solid #ddd; padding: 10px; border-radius: 5px; flex: 1; min-width: 150px; }
+                .success { color: green; }
+                .warning { color: orange; }
+                .error { color: red; }
+                table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+            </style>
+        </head>
+        <body>
+            <h1>Repair-of-Thought Results Summary</h1>
+            
+            <div class="summary">
+                <h2>Run Information</h2>
+                <p><strong>Run ID:</strong> 20250301_105911</p>
+                <p><strong>Timestamp:</strong> 2025-03-01T10:59:11.199436</p>
+                <p><strong>Configuration:</strong></p>
+                <ul>
+                    <li>Patch Number: 3</li>
+                    <li>Chunk Size: 2</li>
+                    <li>Delay Between Bugs: 5 seconds</li>
+                    <li>Total Bugs: 40</li>
+                </ul>
+            </div>
+            
+            <h2>Summary Metrics</h2>
+            <div class="metrics">
+                <div class="metric">
+                    <h3>Progress</h3>
+                    <p>Completed: 40 / 40</p>
+                    <p>Progress: 100.0%</p>
+                </div>
+                
+                <div class="metric">
+                    <h3>Success Rates</h3>
+                    <p>Solutions: 40 / 40 
+                       (100.0%)</p>
+                    <p>Patches: 40 / 40
+                       (100.0%)</p>
+                    <p>Evaluations: 32 / 40
+                       (80.0%)</p>
+                </div>
+                
+                <div class="metric">
+                    <h3>Patch Quality</h3>
+                    <p class="success">CORRECT: 9</p>
+                    <p class="warning">PLAUSIBLE: 44</p>
+                    <p class="error">INCORRECT: 41</p>
+                </div>
+            </div>
+            
+            <h2>Bug Details</h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Bug</th>
+      <th>Solution Status</th>
+      <th>Patch Status</th>
+      <th>Evaluation Status</th>
+      <th>Duration (s)</th>
+      <th>CORRECT</th>
+      <th>PLAUSIBLE</th>
+      <th>INCORRECT</th>
+      <th>UNKNOWN</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Closure-10</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>105.617550</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-101</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>144.345987</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-102</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>102.074236</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-104</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>348.748757</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-107</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>130.511587</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-105</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>298.657208</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-109</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>150.482635</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-11</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>161.392915</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-111</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>90.851651</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-112</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>183.522474</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-114</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>112.246130</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-113</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>233.952570</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-115</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>157.763185</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-116</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>255.360555</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-118</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>193.710589</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-117</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>196.710554</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-12</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>100.633891</td>
+      <td>0</td>
+      <td>3</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-119</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>212.221238</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-120</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>213.628211</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-121</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>339.119125</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-123</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>40.812828</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-122</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>217.263025</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-125</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>140.145678</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-124</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>205.269047</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-126</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>288.133952</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-128</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>386.127404</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-129</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>169.267394</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-13</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>375.851346</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-130</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>207.751018</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-131</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>215.577367</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-133</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>134.024979</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-132</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>308.016583</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-145</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>231.024834</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-14</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>338.058736</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-15</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>103.704393</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-146</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>182.306011</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-150</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>280.446916</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-152</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>281.765872</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-160</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>153.211032</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-159</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>300.088742</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+        </body>
+        </html>
+        

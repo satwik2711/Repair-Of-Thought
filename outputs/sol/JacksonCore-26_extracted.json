@@ -1,0 +1,9 @@
+{
+  "JacksonCore-26": {
+    "The root cause of the bug is that the `_currInputProcessed` variable is not being updated correctly. When the input is fed in two parts, the `_currInputProcessed` variable is not reset to 0, causing the byte offset to be incorrect.": [
+      "Reset `_currInputProcessed` to 0\nOne potential fix is to reset the `_currInputProcessed` variable to 0 when the input is fed in two parts. This can be done by adding a line `_currInputProcessed = 0;` before updating the input pointers and buffer settings. This will ensure that the byte offset is calculated correctly after feeding input in two parts.",
+      "Update `_currInputProcessed` based on the input length\nAnother potential fix is to update the `_currInputProcessed` variable based on the input length. This can be done by changing the line `_currInputProcessed += _origBufferLen;` to `_currInputProcessed = _origBufferLen;`. This will ensure that the byte offset is calculated correctly based on the input length.",
+      "Update `_currInputRowStart` based on the input start\nA third potential fix is to update the `_currInputRowStart` variable based on the input start. This can be done by changing the line `_currInputRowStart = start - (_inputEnd - _currInputRowStart);` to `_currInputRowStart = start;`. This will ensure that the byte offset is calculated correctly based on the input start."
+    ]
+  }
+}
