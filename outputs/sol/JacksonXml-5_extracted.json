@@ -1,0 +1,9 @@
+{
+  "JacksonXml-5": {
+    "The root cause of the bug is that the copy constructor `XmlSerializerProvider(XmlSerializerProvider src)` is copying the `_rootNameLookup` field from the source instance `src` without considering the configuration of the new instance. This field is used to determine the root name of the XML output, and in this case, it is causing the output to contain the name 'AnnotatedName' instead of 'Pojo282'.": [
+      "Do Not Copy _rootNameLookup Field\nOne possible fix is to not copy the `_rootNameLookup` field from the source instance `src`. This can be done by removing the line `_rootNameLookup = src._rootNameLookup;` from the copy constructor. This will ensure that the new instance uses its own configuration to determine the root name of the XML output.",
+      "Use New Instance's Configuration\nAnother possible fix is to use the new instance's configuration to determine the root name of the XML output. This can be done by adding a line to the copy constructor to set the `_rootNameLookup` field based on the new instance's configuration. For example, `_rootNameLookup = new RootNameLookup(getConfig());`.",
+      "Clear _rootNameLookup Field\nA third possible fix is to clear the `_rootNameLookup` field in the copy constructor. This can be done by adding a line to the copy constructor to set the `_rootNameLookup` field to null. For example, `_rootNameLookup = null;`."
+    ]
+  }
+}

@@ -1,0 +1,523 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Repair-of-Thought Results Summary</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h1, h2 { color: #333; }
+                .summary { background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+                .metrics { display: flex; flex-wrap: wrap; gap: 20px; }
+                .metric { background-color: white; border: 1px solid #ddd; padding: 10px; border-radius: 5px; flex: 1; min-width: 150px; }
+                .success { color: green; }
+                .warning { color: orange; }
+                .error { color: red; }
+                table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+            </style>
+        </head>
+        <body>
+            <h1>Repair-of-Thought Results Summary</h1>
+            
+            <div class="summary">
+                <h2>Run Information</h2>
+                <p><strong>Run ID:</strong> 20250304_210002</p>
+                <p><strong>Timestamp:</strong> 2025-03-04T21:00:02.417174</p>
+                <p><strong>Configuration:</strong></p>
+                <ul>
+                    <li>Patch Number: 3</li>
+                    <li>Chunk Size: 2</li>
+                    <li>Delay Between Bugs: 5 seconds</li>
+                    <li>Total Bugs: 40</li>
+                </ul>
+            </div>
+            
+            <h2>Summary Metrics</h2>
+            <div class="metrics">
+                <div class="metric">
+                    <h3>Progress</h3>
+                    <p>Completed: 40 / 40</p>
+                    <p>Progress: 100.0%</p>
+                </div>
+                
+                <div class="metric">
+                    <h3>Success Rates</h3>
+                    <p>Solutions: 40 / 40 
+                       (100.0%)</p>
+                    <p>Patches: 40 / 40
+                       (100.0%)</p>
+                    <p>Evaluations: 34 / 40
+                       (85.0%)</p>
+                </div>
+                
+                <div class="metric">
+                    <h3>Patch Quality</h3>
+                    <p class="success">CORRECT: 19</p>
+                    <p class="warning">PLAUSIBLE: 43</p>
+                    <p class="error">INCORRECT: 41</p>
+                </div>
+            </div>
+            
+            <h2>Bug Details</h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Bug</th>
+      <th>Solution Status</th>
+      <th>Patch Status</th>
+      <th>Evaluation Status</th>
+      <th>Duration (s)</th>
+      <th>CORRECT</th>
+      <th>PLAUSIBLE</th>
+      <th>INCORRECT</th>
+      <th>UNKNOWN</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>JacksonDatabind-42</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>90.504951</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-39</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>209.980105</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-44</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>111.014929</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-45</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>168.101994</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-46</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>126.176493</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-47</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>175.515979</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-49</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>110.910471</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-5</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>227.003772</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-51</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>229.379698</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-54</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>307.351227</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-57</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>116.614327</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-58</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>186.899944</td>
+      <td>1</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-62</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>352.726697</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-6</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>702.207359</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-67</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>141.654449</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-64</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>364.755247</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-7</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>121.896660</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-70</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>202.243042</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-74</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>137.443147</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-71</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>232.387103</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-8</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>213.349789</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-76</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>414.612505</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-82</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>178.135682</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-83</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>238.058267</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-88</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>222.430295</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-85</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>309.875299</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-9</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>114.381960</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-91</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>128.540643</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-93</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>202.068184</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-96</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>240.921662</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-97</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>115.910545</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-98</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>224.095642</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonXml-1</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>349.462379</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-99</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>389.787914</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonXml-3</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>117.606314</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonXml-4</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>193.147448</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonXml-5</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>91.925062</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Jsoup-1</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>299.068931</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Jsoup-13</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>116.578644</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Jsoup-10</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>268.193148</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+        </body>
+        </html>
+        

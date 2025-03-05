@@ -1,0 +1,31 @@
+{
+  "bug_name": "JacksonDatabind-6",
+  "processing_start_time": "2025-03-04T21:22:17.335636",
+  "solution_file": "outputs/sol\\JacksonDatabind-6.json",
+  "extracted_solution_file": "outputs/sol\\JacksonDatabind-6_extracted.json",
+  "patch_file": "outputs/patches\\JacksonDatabind-6_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-04T21:22:17.335659",
+    "end_time": "2025-03-04T21:22:27.957032"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-04T21:22:32.958236",
+    "end_time": "2025-03-04T21:31:58.873314"
+  },
+  "evaluation": {
+    "status": null,
+    "attempt_count": 3,
+    "error": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource has been exhausted (e.g. check quota).', 'status': 'RESOURCE_EXHAUSTED'}}",
+    "start_time": "2025-03-04T21:32:03.873652",
+    "end_time": "2025-03-04T21:33:59.542982",
+    "results": null
+  },
+  "processing_end_time": "2025-03-04T21:33:59.542995",
+  "processing_duration_seconds": 702.207359
+}

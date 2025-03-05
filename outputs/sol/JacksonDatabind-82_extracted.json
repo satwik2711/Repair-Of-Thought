@@ -1,0 +1,9 @@
+{
+  "JacksonDatabind-82": {
+    "The root cause of the bug is that the `addBeanProps` function is not correctly handling the case where a property has a getter but no setter. In the `Simple1595` class, the `name` property has a getter but no setter, and the `USE_GETTERS_AS_SETTERS` feature is enabled. However, the `addBeanProps` function is not correctly using the getter as a setter, resulting in the `name` property not being set during deserialization.": [
+      "Use Getter as Setter\nOne potential fix is to modify the `addBeanProps` function to use the getter as a setter when the `USE_GETTERS_AS_SETTERS` feature is enabled. We can do this by adding a new condition to the `if` statement that checks if the property has a getter but no setter. If this condition is true, we can use the getter as a setter by calling the `constructSetterlessProperty` method.\n\n```java\nif (propDef.hasGetter() && !propDef.hasSetter() && useGettersAsSetters) {\n    prop = constructSetterlessProperty(ctxt, beanDesc, propDef);\n}\n```",
+      "Add Setter for Name Property\nAnother potential fix is to add a setter for the `name` property in the `Simple1595` class. This would allow the `addBeanProps` function to correctly set the `name` property during deserialization.\n\n```java\npublic class Simple1595 {\n    // ...\n    public void setName(String name) {\n        this.name = name;\n    }\n    // ...\n}\n```",
+      "Disable USE_GETTERS_AS_SETTERS Feature\nA third potential fix is to disable the `USE_GETTERS_AS_SETTERS` feature. This would prevent the `addBeanProps` function from trying to use getters as setters, and would allow the `name` property to be correctly set during deserialization.\n\n```java\nObjectMapper mapper = new ObjectMapper();\nmapper.disable(MapperFeature.USE_GETTERS_AS_SETTERS);\n```"
+    ]
+  }
+}

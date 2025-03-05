@@ -1,0 +1,9 @@
+{
+  "JacksonDatabind-93": {
+    "The `NullPointerException` is caused by the `cls.getSimpleName()` call in the `validateSubType` function. This is because the `cls` variable is `null` when the `getSuperclass()` method returns `null` for the `Object` class. This happens when the `raw` class is an interface, not a class, and therefore does not have a superclass.": [
+      "Add Null Check for cls Variable\nAdd a null check for the `cls` variable before calling `getSimpleName()` on it. This will prevent the `NullPointerException` from occurring.\n\n```java\nif (cls != null) {\n    String name = cls.getSimpleName();\n    // ...\n}\n```",
+      "Check if cls is a Class\nAdd a check to ensure that `cls` is a class, not an interface, before trying to get its superclass. This will prevent the `NullPointerException` from occurring.\n\n```java\nif (cls.isAssignableFrom(Class.class)) {\n    cls = cls.getSuperclass();\n    // ...\n}\n```",
+      "Use getDeclaringClass() instead of getSuperclass()\nInstead of using `getSuperclass()` to get the superclass of `cls`, use `getDeclaringClass()` to get the class that declares `cls`. This will prevent the `NullPointerException` from occurring.\n\n```java\ncls = cls.getDeclaringClass();\n// ...\n```"
+    ]
+  }
+}
