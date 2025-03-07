@@ -1,0 +1,9 @@
+{
+  "Jsoup-48": {
+    "The root cause of the bug is in the line 'header(name, values.get(0));'. This line only considers the first value of the header and ignores the rest. This is why the test fails when it expects multiple values to be combined with commas.": [
+      "Joining Values with Comma\nWe can use the 'String.join()' method to combine all values for the same header with commas. Here's the modified code:\n```java\nheader(name, String.join(\", \", values));\n```\nThis will correctly handle multiple values for the same header and pass the test.",
+      "Using StringBuilder\nAlternatively, we can use a 'StringBuilder' to build the combined string. Here's the modified code:\n```java\nStringBuilder sb = new StringBuilder();\nfor (String value : values) {\n    if (sb.length() > 0) {\n        sb.append(\", \");\n    }\n    sb.append(value);\n}\nheader(name, sb.toString());\n```\nThis will also correctly handle multiple values for the same header and pass the test.",
+      "Using Stream API\nWe can also use the Stream API to combine all values for the same header with commas. Here's the modified code:\n```java\nheader(name, values.stream().collect(Collectors.joining(\", \")));\n```\nThis will correctly handle multiple values for the same header and pass the test."
+    ]
+  }
+}

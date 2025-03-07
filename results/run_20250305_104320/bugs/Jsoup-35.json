@@ -1,0 +1,31 @@
+{
+  "bug_name": "Jsoup-35",
+  "processing_start_time": "2025-03-05T11:01:06.285402",
+  "solution_file": "outputs/sol/Jsoup-35.json",
+  "extracted_solution_file": "outputs/sol/Jsoup-35_extracted.json",
+  "patch_file": "outputs/patches/Jsoup-35_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-05T11:01:06.285431",
+    "end_time": "2025-03-05T11:01:16.546347"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-05T11:01:21.551385",
+    "end_time": "2025-03-05T11:01:43.122143"
+  },
+  "evaluation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-05T11:01:48.127221",
+    "end_time": "2025-03-05T11:01:48.131503",
+    "results": []
+  },
+  "processing_end_time": "2025-03-05T11:01:48.131517",
+  "processing_duration_seconds": 41.846115
+}
