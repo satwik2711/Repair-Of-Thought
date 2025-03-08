@@ -1,0 +1,31 @@
+{
+  "bug_name": "Jsoup-64",
+  "processing_start_time": "2025-03-08T11:51:53.703880",
+  "solution_file": "outputs/sol\\Jsoup-64.json",
+  "extracted_solution_file": "outputs/sol\\Jsoup-64_extracted.json",
+  "patch_file": "outputs/patches\\Jsoup-64_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-08T11:51:53.703892",
+    "end_time": "2025-03-08T11:52:02.446302"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-08T11:52:07.446781",
+    "end_time": "2025-03-08T11:53:13.829827"
+  },
+  "evaluation": {
+    "status": null,
+    "attempt_count": 3,
+    "error": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource has been exhausted (e.g. check quota).', 'status': 'RESOURCE_EXHAUSTED'}}",
+    "start_time": "2025-03-08T11:53:18.831006",
+    "end_time": "2025-03-08T11:54:48.015419",
+    "results": null
+  },
+  "processing_end_time": "2025-03-08T11:54:48.015425",
+  "processing_duration_seconds": 174.311545
+}

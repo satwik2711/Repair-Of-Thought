@@ -444,12 +444,12 @@ if __name__ == '__main__':
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
     
-    subset_data = list(data.keys())[280:320]  # Reduced to 20 bugs for testing --- 40
+    subset_data = list(data.keys())[360:400]  # Reduced to 20 bugs for testing --- 40
     
     final_results = generate_dataset_results(
         patch_num=3,
         bug_names=subset_data,
-        chunk_size=2,       # Process 1 bug at a time to avoid rate limiting
+        chunk_size=1,       # Process 1 bug at a time to avoid rate limiting
         delay_between_bugs=5  # 5 second delay between bugs
     )
     

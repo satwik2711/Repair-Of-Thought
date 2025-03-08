@@ -1,0 +1,9 @@
+{
+  "Jsoup-51": {
+    "The root cause of the bug is that the 'matchesLetter' function in the Jsoup parser is not correctly handling non-ASCII characters. The function is checking if the current character is a letter by comparing it to the ASCII values of 'A' to 'Z' and 'a' to 'z'. However, this does not cover non-ASCII characters, which are used in the test case.": [
+      "Use Unicode Character Properties\nThe 'matchesLetter' function can be modified to use Unicode character properties to check if the current character is a letter. This can be done using the 'Character.isLetter' method in Java. The corrected function should look like this:\nboolean matchesLetter() {\n    if (isEmpty())\n        return false;\n    char c = input[pos];\n    return Character.isLetter(c);\n}",
+      "Use a Regular Expression\nAnother approach is to use a regular expression to match the current character against a pattern that includes all Unicode letters. This can be done using the 'String.matches' method in Java. The corrected function should look like this:\nboolean matchesLetter() {\n    if (isEmpty())\n        return false;\n    char c = input[pos];\n    return String.valueOf(c).matches(\"\\\\p{L}\");\n}",
+      "Use a Unicode Character Range\nWe can also modify the 'matchesLetter' function to check if the current character falls within a specific Unicode character range that includes all letters. This can be done by checking if the character's Unicode code point falls within the range of Unicode letters. The corrected function should look like this:\nboolean matchesLetter() {\n    if (isEmpty())\n        return false;\n    char c = input[pos];\n    int codePoint = Character.codePointAt(input, pos);\n    return Character.UnicodeBlock.of(codePoint) != null && Character.UnicodeBlock.of(codePoint).equals(Character.UnicodeBlock.LATIN_EXTENDED_A) || Character.UnicodeBlock.of(codePoint).equals(Character.UnicodeBlock.LATIN_EXTENDED_ADDITIONAL);\n}"
+    ]
+  }
+}

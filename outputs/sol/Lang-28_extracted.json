@@ -1,0 +1,9 @@
+{
+  "Lang-28": {
+    "The issue lies in the way the function is writing the unescaped entity value to the output writer. The function is using `out.write(entityValue)`, which writes the entity value as a single character. However, the entity value is a Unicode code point that represents a supplementary character, which cannot be represented by a single `char` in Java. This is causing the function to write the wrong character to the output.": [
+      "Using Character.toChars()\nThe `Character.toChars()` method can be used to convert the entity value to a `char` array, which can then be written to the output writer. This method can handle supplementary characters correctly. Here's how the code can be modified:\n\n```java\nchar[] chars = Character.toChars(entityValue);\nout.write(chars);\n```",
+      "Using String.valueOf() and getBytes()\nAnother possible fix is to use the `String.valueOf()` method to convert the entity value to a `String`, and then write this string to the output writer using the `getBytes()` method to get the bytes of the string. Here's how the code can be modified:\n\n```java\nString str = String.valueOf(entityValue);\nbyte[] bytes = str.getBytes();\nout.write(bytes);\n```",
+      "Using StringBuilder and appendCodePoint()\nA third possible fix is to use a `StringBuilder` to build the string representation of the entity value, and then use the `appendCodePoint()` method to append the Unicode code point to the string builder. Here's how the code can be modified:\n\n```java\nStringBuilder sb = new StringBuilder();\nsb.appendCodePoint(entityValue);\nout.write(sb.toString());\n```"
+    ]
+  }
+}

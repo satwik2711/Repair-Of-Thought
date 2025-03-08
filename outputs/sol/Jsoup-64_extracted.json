@@ -1,0 +1,12 @@
+{
+  "Jsoup-64": {
+    "The `handleRawtext` function is not correctly handling the meta tag because it is transitioning to the Text state after inserting the start tag, which causes the subsequent HTML tags to be treated as text instead of being parsed as HTML.": [
+      "Handle Meta Tag Separately\nOne possible fix is to add a special case for the meta tag in the `handleRawtext` function. This would involve checking if the start tag is a meta tag and handling it separately, without transitioning to the Text state. This would ensure that the meta tag is correctly parsed as HTML.",
+      "Use a Different Insertion Mode\nAnother possible fix is to use a different insertion mode for the `handleRawtext` function. Instead of transitioning to the Text state, the function could transition to a state that is specifically designed for handling raw text, such as the `Rawtext` state. This would ensure that the subsequent HTML tags are correctly parsed as HTML.",
+      "Modify the Tokeniser Transition\nA third possible fix is to modify the tokeniser transition in the `handleRawtext` function. Instead of transitioning to the Rawtext state, the function could transition to a state that is specifically designed for handling HTML tags, such as the `Tag` state. This would ensure that the subsequent HTML tags are correctly parsed as HTML.\n\nHere is the modified code for each suggestion:",
+      "```java\nprivate static void handleRawtext(Token.StartTag startTag, HtmlTreeBuilder tb) {\n    if (startTag.name().equals(\"meta\")) {\n        tb.insert(startTag);\n        tb.transition(Tag);\n    } else {\n        tb.insert(startTag);\n        tb.tokeniser.transition(TokeniserState.Rawtext);\n        tb.markInsertionMode();\n        tb.transition(Text);\n    }\n}\n```",
+      "```java\nprivate static void handleRawtext(Token.StartTag startTag, HtmlTreeBuilder tb) {\n    tb.insert(startTag);\n    tb.tokeniser.transition(TokeniserState.Rawtext);\n    tb.markInsertionMode();\n    tb.transition(Rawtext);\n}\n```",
+      "```java\nprivate static void handleRawtext(Token.StartTag startTag, HtmlTreeBuilder tb) {\n    tb.insert(startTag);\n    tb.tokeniser.transition(TokeniserState.Tag);\n    tb.markInsertionMode();\n    tb.transition(Tag);\n}\n```"
+    ]
+  }
+}

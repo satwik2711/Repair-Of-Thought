@@ -1,0 +1,9 @@
+{
+  "Jsoup-54": {
+    "The root cause of the bug is that the `copyAttributes` function does not properly handle invalid attribute names. The function uses a regular expression to remove invalid characters from the attribute name, but this regular expression does not account for all possible invalid characters. Specifically, the regular expression does not remove double quotes (`\"`) from the attribute name, which is an invalid character in XML attribute names.": [
+      "Improve Regular Expression\nWe can improve the regular expression used to remove invalid characters from the attribute name. Specifically, we can add double quotes (`\"`) to the list of characters to remove. Here is an updated regular expression: `String key = attribute.getKey().replaceAll(\"[^a-zA-Z_:][-a-zA-Z0-9_:.\\\"']\", \"\");` This approach is simple and effective, and it properly handles invalid attribute names.",
+      "Use a Whitelist Approach\nInstead of using a regular expression to remove invalid characters, we can use a whitelist approach to only allow valid characters in the attribute name. Here is an example implementation: `String key = attribute.getKey(); for (char c : key.toCharArray()) { if (!isValidXmlChar(c)) { key = key.replace(String.valueOf(c), \"\"); } }` This approach is more robust and flexible, and it can be easily extended to handle additional invalid characters.",
+      "Skip Invalid Attributes\nAnother approach is to simply skip attributes with invalid names. Here is an example implementation: `if (attribute.getKey().matches(\"^[a-zA-Z_:][-a-zA-Z0-9_:.\\\"']*\")) { el.setAttribute(attribute.getKey(), attribute.getValue()); }` This approach is simple and efficient, and it avoids the need to modify the attribute name. However, it may not be suitable for all use cases, as it silently ignores invalid attributes."
+    ]
+  }
+}

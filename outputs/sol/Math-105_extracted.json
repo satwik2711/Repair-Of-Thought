@@ -1,0 +1,9 @@
+{
+  "Math-105": {
+    "The root cause of the bug is that the function getSumSquaredErrors() does not handle the case where the denominator sumXX is zero or very close to zero, causing a division by zero error or a very large negative result due to rounding errors. This is because the function does not check for this condition before performing the division.": [
+      "Check for Division by Zero\nWe can add a simple check before performing the division to ensure that the denominator sumXX is not zero or very close to zero. If it is, we can return a special value, such as Double.NaN or 0, to indicate that the SSE cannot be computed. The modified function would look like this:\n```java\npublic double getSumSquaredErrors() {\n    if (sumXX == 0) {\n        return Double.NaN;\n    }\n    return sumYY - sumXY * sumXY / sumXX;\n}\n```",
+      "Use a Tolerance for Division by Zero\nWe can use a tolerance value to determine whether the denominator sumXX is close enough to zero to be considered zero. If it is, we can return a special value, such as Double.NaN or 0, to indicate that the SSE cannot be computed. The modified function would look like this:\n```java\npublic double getSumSquaredErrors() {\n    double tolerance = 1e-12; // adjust this value as needed\n    if (Math.abs(sumXX) < tolerance) {\n        return Double.NaN;\n    }\n    return sumYY - sumXY * sumXY / sumXX;\n}\n```",
+      "Use a Special Value for Negative Results\nWe can modify the function to return a special value, such as Double.NaN or 0, if the computed SSE is negative. This will ensure that the returned value is always non-negative, as required by the function's contract. The modified function would look like this:\n```java\npublic double getSumSquaredErrors() {\n    double sse = sumYY - sumXY * sumXY / sumXX;\n    return sse < 0 ? 0 : sse;\n}\n```"
+    ]
+  }
+}

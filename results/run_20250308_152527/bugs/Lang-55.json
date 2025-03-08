@@ -1,0 +1,31 @@
+{
+  "bug_name": "Lang-55",
+  "processing_start_time": "2025-03-08T16:08:16.517333",
+  "solution_file": "outputs/sol\\Lang-55.json",
+  "extracted_solution_file": "outputs/sol\\Lang-55_extracted.json",
+  "patch_file": "outputs/patches\\Lang-55_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-08T16:08:16.517363",
+    "end_time": "2025-03-08T16:08:25.623588"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-08T16:08:30.623995",
+    "end_time": "2025-03-08T16:11:20.926154"
+  },
+  "evaluation": {
+    "status": null,
+    "attempt_count": 3,
+    "error": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource has been exhausted (e.g. check quota).', 'status': 'RESOURCE_EXHAUSTED'}}",
+    "start_time": "2025-03-08T16:11:25.926710",
+    "end_time": "2025-03-08T16:13:11.412130",
+    "results": null
+  },
+  "processing_end_time": "2025-03-08T16:13:11.412150",
+  "processing_duration_seconds": 294.894817
+}
