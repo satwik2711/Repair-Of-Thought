@@ -1,0 +1,9 @@
+{
+  "Math-8": {
+    "The issue is caused by the fact that the `sample` function creates an array of type `T` using `java.lang.reflect.Array.newInstance`, but then tries to store objects of type `Object` in the array. The `ArrayStoreException` is thrown because the type of the objects being stored is not compatible with the type of the array. This is because the `singletons.get(0).getClass()` returns the class of the first object in the distribution, which is an anonymous class, but the `sample` function returns an object of type `Object`.": [
+      "Use Object Array Instead of Typed Array\nOne possible fix is to create an array of type `Object` instead of type `T`. This can be done by replacing the line `final T[] out = (T[]) java.lang.reflect.Array.newInstance(singletons.get(0).getClass(), sampleSize);` with `final Object[] out = new Object[sampleSize];`. This will allow the `sample` function to store objects of any type in the array.",
+      "Use a More General Type for the Array\nAnother possible fix is to use a more general type for the array, such as `Serializable` or `Comparable`. This can be done by replacing the line `final T[] out = (T[]) java.lang.reflect.Array.newInstance(singletons.get(0).getClass(), sampleSize);` with `final Serializable[] out = (Serializable[]) java.lang.reflect.Array.newInstance(Serializable.class, sampleSize);`. This will allow the `sample` function to store objects of any type that implements the `Serializable` interface.",
+      "Cast the Sampled Object to the Correct Type\nA third possible fix is to cast the sampled object to the correct type before storing it in the array. This can be done by replacing the line `out[i] = sample();` with `out[i] = (T) sample();`. This will ensure that the object is cast to the correct type before being stored in the array."
+    ]
+  }
+}

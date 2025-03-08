@@ -1,0 +1,10 @@
+{
+  "Math-53": {
+    "The root cause of the bug is that the function is not checking if the real or imaginary parts of the input complex numbers are NaN before performing the addition. As a result, when a NaN value is encountered, it is not being propagated correctly to the result.": [
+      "Check for NaN before performing addition\nCheck if the real or imaginary parts of the input complex numbers are NaN before performing the addition. If either part is NaN, return a complex number with NaN as both its real and imaginary parts. This can be achieved by adding a simple if statement to check for NaN values.",
+      "Use Double.isNaN to check for NaN\nUse the Double.isNaN function to check if the real or imaginary parts of the input complex numbers are NaN. If either part is NaN, return a complex number with NaN as both its real and imaginary parts. This approach is more explicit and clear in its intention.",
+      "Propagate NaN values\nPropagate NaN values from the input complex numbers to the result. If either the real or imaginary part of the input complex number is NaN, set the corresponding part of the result to NaN. This approach ensures that NaN values are correctly propagated to the result, even if the other part of the complex number is not NaN.\n\nHere is the debugged code for",
+      "```java\npublic Complex add(Complex rhs)\n    throws NullArgumentException {\n    MathUtils.checkNotNull(rhs);\n    if (Double.isNaN(real) || Double.isNaN(imaginary) || Double.isNaN(rhs.getReal()) || Double.isNaN(rhs.getImaginary())) {\n        return Complex.NaN;\n    }\n    return createComplex(real + rhs.getReal(),\n        imaginary + rhs.getImaginary());\n}\n```"
+    ]
+  }
+}
