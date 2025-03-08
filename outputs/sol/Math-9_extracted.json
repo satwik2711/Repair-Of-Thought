@@ -1,0 +1,9 @@
+{
+  "Math-9": {
+    "The issue lies in the way the `revert` function calculates the new direction. The `zero.subtract(direction)` expression is subtracting the direction vector from the zero vector, which is not equivalent to negating the direction vector. This is because subtracting a vector from the zero vector does not change its magnitude, only its direction. However, the direction vector is being subtracted from the zero vector, resulting in a vector with the same magnitude but opposite direction, which is not the expected result.": [
+      "Negate the Direction Vector Directly\nThe simplest fix is to directly negate the direction vector using the `negate` method, like this: `final Line reverted = new Line(zero, direction.negate());`. This will correctly reverse the direction of the line.",
+      "Use Vector Subtraction Correctly\nAlternatively, we can use vector subtraction correctly by subtracting the direction vector from the zero vector and then negating the result, like this: `final Line reverted = new Line(zero, zero.subtract(direction).negate());`. However, this approach is less efficient and less readable than the first suggestion.",
+      "Use a Temporary Variable for Clarity\nWe can also use a temporary variable to make the code more readable, like this: `Vector3D newDirection = direction.negate(); final Line reverted = new Line(zero, newDirection);`. This approach makes it clear what the code is doing and can make it easier to understand and maintain."
+    ]
+  }
+}
