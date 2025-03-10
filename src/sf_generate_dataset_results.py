@@ -444,7 +444,7 @@ if __name__ == '__main__':
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
     
-    subset_data = list(data.keys())[440:460]  # Reduced to 20 bugs for testing --- 40
+    subset_data = list(data.keys())[460:480]  # Reduced to 20 bugs for testing --- 40
     
     final_results = generate_dataset_results(
         patch_num=3,

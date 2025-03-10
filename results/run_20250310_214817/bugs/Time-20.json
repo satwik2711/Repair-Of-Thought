@@ -1,0 +1,31 @@
+{
+  "bug_name": "Time-20",
+  "processing_start_time": "2025-03-10T22:28:12.906824",
+  "solution_file": "outputs/sol/Time-20.json",
+  "extracted_solution_file": "outputs/sol/Time-20_extracted.json",
+  "patch_file": "outputs/patches/Time-20_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-10T22:28:12.906862",
+    "end_time": "2025-03-10T22:28:22.420163"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-10T22:28:27.424497",
+    "end_time": "2025-03-10T22:35:19.308850"
+  },
+  "evaluation": {
+    "status": null,
+    "attempt_count": 3,
+    "error": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource has been exhausted (e.g. check quota).', 'status': 'RESOURCE_EXHAUSTED'}}",
+    "start_time": "2025-03-10T22:35:24.312952",
+    "end_time": "2025-03-10T22:37:07.450627",
+    "results": null
+  },
+  "processing_end_time": "2025-03-10T22:37:07.450653",
+  "processing_duration_seconds": 534.543829
+}
