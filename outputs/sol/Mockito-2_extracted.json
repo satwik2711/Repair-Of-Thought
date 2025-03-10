@@ -1,0 +1,9 @@
+{
+  "Mockito-2": {
+    "The Timer constructor does not validate the input duration, allowing negative values to be passed in. This can cause unexpected behavior when the Timer is used, and is likely the reason why the test is failing.": [
+      "Throw an Exception for Negative Durations\nThrow a FriendlyReminderException or a similar exception when a negative duration is passed to the Timer constructor. This will ensure that the test passes and the Timer is not created with an invalid duration. The updated code would be:\n```java\npublic Timer(long durationMillis) {\n    if (durationMillis < 0) {\n        throw new FriendlyReminderException(\"Duration cannot be negative\");\n    }\n    this.durationMillis = durationMillis;\n}\n```",
+      "Use a Default Duration for Negative Inputs\nInstead of throwing an exception, we could use a default duration (e.g. 0) when a negative duration is passed to the Timer constructor. This would ensure that the Timer is created with a valid duration, but may not be the desired behavior in all cases. The updated code would be:\n```java\npublic Timer(long durationMillis) {\n    if (durationMillis < 0) {\n        durationMillis = 0;\n    }\n    this.durationMillis = durationMillis;\n}\n```",
+      "Validate and Normalize the Duration\nWe could validate the input duration and normalize it to a non-negative value. For example, we could take the absolute value of the input duration. This would ensure that the Timer is created with a valid duration, and would provide a more robust solution. The updated code would be:\n```java\npublic Timer(long durationMillis) {\n    this.durationMillis = Math.abs(durationMillis);\n}\n```"
+    ]
+  }
+}
