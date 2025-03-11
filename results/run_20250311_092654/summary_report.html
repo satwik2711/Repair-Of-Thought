@@ -1,0 +1,325 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Repair-of-Thought Results Summary</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h1, h2 { color: #333; }
+                .summary { background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+                .metrics { display: flex; flex-wrap: wrap; gap: 20px; }
+                .metric { background-color: white; border: 1px solid #ddd; padding: 10px; border-radius: 5px; flex: 1; min-width: 150px; }
+                .success { color: green; }
+                .warning { color: orange; }
+                .error { color: red; }
+                table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+            </style>
+        </head>
+        <body>
+            <h1>Repair-of-Thought Results Summary</h1>
+            
+            <div class="summary">
+                <h2>Run Information</h2>
+                <p><strong>Run ID:</strong> 20250311_092654</p>
+                <p><strong>Timestamp:</strong> 2025-03-11T09:26:54.421858</p>
+                <p><strong>Configuration:</strong></p>
+                <ul>
+                    <li>Patch Number: 3</li>
+                    <li>Chunk Size: 1</li>
+                    <li>Delay Between Bugs: 5 seconds</li>
+                    <li>Total Bugs: 22</li>
+                </ul>
+            </div>
+            
+            <h2>Summary Metrics</h2>
+            <div class="metrics">
+                <div class="metric">
+                    <h3>Progress</h3>
+                    <p>Completed: 22 / 22</p>
+                    <p>Progress: 100.0%</p>
+                </div>
+                
+                <div class="metric">
+                    <h3>Success Rates</h3>
+                    <p>Solutions: 22 / 22 
+                       (100.0%)</p>
+                    <p>Patches: 22 / 22
+                       (100.0%)</p>
+                    <p>Evaluations: 22 / 22
+                       (100.0%)</p>
+                </div>
+                
+                <div class="metric">
+                    <h3>Patch Quality</h3>
+                    <p class="success">CORRECT: 11</p>
+                    <p class="warning">PLAUSIBLE: 28</p>
+                    <p class="error">INCORRECT: 27</p>
+                </div>
+            </div>
+            
+            <h2>Bug Details</h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Bug</th>
+      <th>Solution Status</th>
+      <th>Patch Status</th>
+      <th>Evaluation Status</th>
+      <th>Duration (s)</th>
+      <th>CORRECT</th>
+      <th>PLAUSIBLE</th>
+      <th>INCORRECT</th>
+      <th>UNKNOWN</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>JacksonDatabind-105</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>108.222677</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-94</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>110.740939</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Csv-7</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>103.705825</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JxPath-18</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>157.818843</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Mockito-37</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>104.049022</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-36</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>232.046469</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-77</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>161.248721</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-20</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>80.245563</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonXml-2</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>221.417961</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Cli-10</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>228.284070</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-110</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>230.986470</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-78</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>182.932096</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Mockito-15</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>299.761676</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-43</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>152.260963</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-14</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>196.050109</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-55</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>228.941877</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JxPath-20</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>163.043436</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-63</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>126.792217</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Compress-34</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>94.758548</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Mockito-32</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>328.544555</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Compress-39</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>105.810662</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Math-61</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>91.142778</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+        </body>
+        </html>
+        

@@ -1,0 +1,9 @@
+{
+  "JacksonDatabind-55": {
+    "The root cause of the issue is that the `getFallbackKeySerializer` function is not correctly handling the case where the raw key type is an enum with a `@JsonProperty` annotation. Specifically, when the raw key type is an enum, the function is returning a `Default` serializer with the enum type, but it's not taking into account the `@JsonProperty` annotation on the enum value.": [
+      "Use `@JsonProperty` Annotation\nWe can modify the `getFallbackKeySerializer` function to check if the raw key type is an enum and if it has a `@JsonProperty` annotation. If it does, we can use the value of the annotation as the key serializer. This would involve adding a new check for the `@JsonProperty` annotation and using the `AnnotationIntrospector` to get the value of the annotation.",
+      "Use `Enum` Value as Key Serializer\nAnother approach would be to use the `Enum` value as the key serializer. This would involve modifying the `getFallbackKeySerializer` function to return a `Default` serializer with the `Enum` value instead of the enum type. This would ensure that the `@JsonProperty` annotation is taken into account when serializing the enum key.",
+      "Use `AnnotationIntrospector` to Get `@JsonProperty` Value\nWe can also use the `AnnotationIntrospector` to get the value of the `@JsonProperty` annotation on the enum value. This would involve adding a new check for the `@JsonProperty` annotation and using the `AnnotationIntrospector` to get the value of the annotation. We can then use this value as the key serializer.\n\nThe modified code for Suggestion 2 would be:\n```java\nif (rawKeyType.isEnum()) {\n    return new Default(Default.TYPE_ENUM, ((Enum<?>) rawKeyType.getEnumConstants()[0]).name());\n}\n```\nThis code uses the `Enum` value as the key serializer, ensuring that the `@JsonProperty` annotation is taken into account."
+    ]
+  }
+}

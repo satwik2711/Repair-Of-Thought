@@ -1,0 +1,31 @@
+{
+  "bug_name": "Mockito-31",
+  "processing_start_time": "2025-03-09T13:16:28.324572",
+  "solution_file": "outputs/sol\\Mockito-31.json",
+  "extracted_solution_file": "outputs/sol\\Mockito-31_extracted.json",
+  "patch_file": "outputs/patches\\Mockito-31_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-09T13:16:28.324612",
+    "end_time": "2025-03-09T13:16:37.181211"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-09T13:16:42.181656",
+    "end_time": "2025-03-09T13:18:05.050015"
+  },
+  "evaluation": {
+    "status": null,
+    "attempt_count": 3,
+    "error": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource has been exhausted (e.g. check quota).', 'status': 'RESOURCE_EXHAUSTED'}}",
+    "start_time": "2025-03-09T13:18:10.050234",
+    "end_time": "2025-03-09T13:19:06.712092",
+    "results": null
+  },
+  "processing_end_time": "2025-03-09T13:19:06.712108",
+  "processing_duration_seconds": 158.387536
+}
