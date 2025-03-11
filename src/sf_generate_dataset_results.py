@@ -440,17 +440,36 @@ if __name__ == '__main__':
     Example usage: Just run this script directly, or call the function 
     generate_dataset_results in your own code.
     """
+    bugs_path = "missing_evals.json"
+    with open(bugs_path,'r',encoding='utf-8') as file:
+        bugs_data=json.load(file)
+    
+    bugs_to_reevaluate = bugs_data['bugs']
     file_path = r"./datasets/defects4j-sf.json"
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
+
+    valid_bugs = [bug for bug in bugs_to_reevaluate if bug in data]
+    if len(valid_bugs) != len(bugs_to_reevaluate):
+        missing_bugs = set(bugs_to_reevaluate) - set(valid_bugs)
+        print(f"Warning: {len(missing_bugs)} bugs not found in dataset: {missing_bugs}")
     
-    subset_data = list(data.keys())[500:]  # Reduced to 20 bugs for testing --- 40
-    
-    final_results = generate_dataset_results(
-        patch_num=3,
-        bug_names=subset_data,
-        chunk_size=1,       # Process 1 bug at a time to avoid rate limiting
-        delay_between_bugs=5  # 5 second delay between bugs
-    )
+    valid_bugs=valid_bugs[4:]
+
+    if valid_bugs:
+        print(f"Re-evaluating {len(valid_bugs)} bugs: {valid_bugs}")
+        
+        # Run the dataset generation on just these bugs
+        final_results = generate_dataset_results(
+            patch_num=3,
+            bug_names=valid_bugs,
+            chunk_size=1,       # Process 1 bug at a time to avoid rate limiting
+            delay_between_bugs=5,  # 5 second delay between bugs
+            results_dir="results_rerun"  # Store results in a separate directory
+        )
+        
+        print(f"Re-evaluation completed. Results saved to results_rerun directory.")
+    else:
+        print("No valid bugs to re-evaluate.")
     
     print(f"[INFO] All done! Results saved to results directory.")

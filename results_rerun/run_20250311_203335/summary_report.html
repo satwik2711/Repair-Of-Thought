@@ -1,0 +1,545 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Repair-of-Thought Results Summary</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h1, h2 { color: #333; }
+                .summary { background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+                .metrics { display: flex; flex-wrap: wrap; gap: 20px; }
+                .metric { background-color: white; border: 1px solid #ddd; padding: 10px; border-radius: 5px; flex: 1; min-width: 150px; }
+                .success { color: green; }
+                .warning { color: orange; }
+                .error { color: red; }
+                table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+            </style>
+        </head>
+        <body>
+            <h1>Repair-of-Thought Results Summary</h1>
+            
+            <div class="summary">
+                <h2>Run Information</h2>
+                <p><strong>Run ID:</strong> 20250311_203335</p>
+                <p><strong>Timestamp:</strong> 2025-03-11T20:33:35.784583</p>
+                <p><strong>Configuration:</strong></p>
+                <ul>
+                    <li>Patch Number: 3</li>
+                    <li>Chunk Size: 1</li>
+                    <li>Delay Between Bugs: 5 seconds</li>
+                    <li>Total Bugs: 42</li>
+                </ul>
+            </div>
+            
+            <h2>Summary Metrics</h2>
+            <div class="metrics">
+                <div class="metric">
+                    <h3>Progress</h3>
+                    <p>Completed: 42 / 42</p>
+                    <p>Progress: 100.0%</p>
+                </div>
+                
+                <div class="metric">
+                    <h3>Success Rates</h3>
+                    <p>Solutions: 42 / 42 
+                       (100.0%)</p>
+                    <p>Patches: 42 / 42
+                       (100.0%)</p>
+                    <p>Evaluations: 40 / 42
+                       (95.2%)</p>
+                </div>
+                
+                <div class="metric">
+                    <h3>Patch Quality</h3>
+                    <p class="success">CORRECT: 22</p>
+                    <p class="warning">PLAUSIBLE: 35</p>
+                    <p class="error">INCORRECT: 59</p>
+                </div>
+            </div>
+            
+            <h2>Bug Details</h2>
+            <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Bug</th>
+      <th>Solution Status</th>
+      <th>Patch Status</th>
+      <th>Evaluation Status</th>
+      <th>Duration (s)</th>
+      <th>CORRECT</th>
+      <th>PLAUSIBLE</th>
+      <th>INCORRECT</th>
+      <th>UNKNOWN</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Closure-101</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>80.046844</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-109</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>83.841535</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-11</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>106.765440</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-123</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>39.947980</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-130</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>192.055555</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-131</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>142.070799</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-145</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>157.690511</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-150</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>170.913822</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-152</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>269.344447</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-17</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>146.619437</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-21</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>321.629068</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-25</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>144.103037</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-35</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>112.820869</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-57</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>108.952094</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-58</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>382.461293</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-65</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>287.819770</td>
+      <td>3</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-62</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>139.884246</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-7</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>96.140752</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Closure-96</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>215.419704</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonCore-23</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>155.520293</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonCore-25</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>161.797049</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonCore-26</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>184.176451</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonCore-8</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>266.767302</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonCore-7</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>186.641256</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-1</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>195.721737</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-101</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>320.215740</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-17</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>208.556928</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-16</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>193.349629</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-34</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>92.861304</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-33</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>209.440465</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-6</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>351.672370</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-76</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>254.848634</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-88</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>142.822913</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-93</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>119.073418</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonDatabind-98</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>197.704253</td>
+      <td>0</td>
+      <td>3</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>JacksonXml-1</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>None</td>
+      <td>451.381412</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Jsoup-64</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>97.595617</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Jsoup-76</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>39.170549</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Lang-55</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>89.570454</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Mockito-28</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>155.229592</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Time-20</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>134.568762</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>Jsoup-33</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>Success</td>
+      <td>104.172380</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+        </body>
+        </html>
+        

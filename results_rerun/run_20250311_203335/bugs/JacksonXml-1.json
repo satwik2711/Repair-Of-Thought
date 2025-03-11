@@ -1,0 +1,31 @@
+{
+  "bug_name": "JacksonXml-1",
+  "processing_start_time": "2025-03-11T22:23:50.805225",
+  "solution_file": "outputs/sol\\JacksonXml-1.json",
+  "extracted_solution_file": "outputs/sol\\JacksonXml-1_extracted.json",
+  "patch_file": "outputs/patches\\JacksonXml-1_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-11T22:23:50.805246",
+    "end_time": "2025-03-11T22:24:01.157616"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-11T22:24:06.157965",
+    "end_time": "2025-03-11T22:29:29.075699"
+  },
+  "evaluation": {
+    "status": null,
+    "attempt_count": 3,
+    "error": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource has been exhausted (e.g. check quota).', 'status': 'RESOURCE_EXHAUSTED'}}",
+    "start_time": "2025-03-11T22:29:34.076202",
+    "end_time": "2025-03-11T22:31:22.186626",
+    "results": null
+  },
+  "processing_end_time": "2025-03-11T22:31:22.186637",
+  "processing_duration_seconds": 451.381412
+}

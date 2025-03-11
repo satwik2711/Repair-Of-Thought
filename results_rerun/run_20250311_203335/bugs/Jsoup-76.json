@@ -1,0 +1,31 @@
+{
+  "bug_name": "Jsoup-76",
+  "processing_start_time": "2025-03-11T22:33:09.817491",
+  "solution_file": "outputs/sol\\Jsoup-76.json",
+  "extracted_solution_file": "outputs/sol\\Jsoup-76_extracted.json",
+  "patch_file": "outputs/patches\\Jsoup-76_patch.json",
+  "solution_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-11T22:33:09.817518",
+    "end_time": "2025-03-11T22:33:21.309479"
+  },
+  "patch_generation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-11T22:33:26.309826",
+    "end_time": "2025-03-11T22:33:43.956624"
+  },
+  "evaluation": {
+    "status": "Success",
+    "attempt_count": 1,
+    "error": null,
+    "start_time": "2025-03-11T22:33:48.957167",
+    "end_time": "2025-03-11T22:33:48.988035",
+    "results": []
+  },
+  "processing_end_time": "2025-03-11T22:33:48.988040",
+  "processing_duration_seconds": 39.170549
+}
