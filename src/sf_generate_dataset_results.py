@@ -454,7 +454,7 @@ if __name__ == '__main__':
         missing_bugs = set(bugs_to_reevaluate) - set(valid_bugs)
         print(f"Warning: {len(missing_bugs)} bugs not found in dataset: {missing_bugs}")
     
-    valid_bugs=valid_bugs[4:]
+    valid_bugs=valid_bugs
 
     if valid_bugs:
         print(f"Re-evaluating {len(valid_bugs)} bugs: {valid_bugs}")
