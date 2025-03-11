@@ -9,3 +9,4 @@ groq
 google-genai
 python-dotenv
 javalang
+beautifulsoup4
