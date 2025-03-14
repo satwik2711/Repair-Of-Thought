@@ -139,6 +139,7 @@ ROT achieves remarkable results in fixing function-level bugs:
 ## 👥 Contributors
 
 - **Satwik Pandey** - [GitHub](https://github.com/satwik-pandey)
+- **R Suresh** - [GitHub](https://github.com/R-Suresh07)
 
 ## 📜 License
 
